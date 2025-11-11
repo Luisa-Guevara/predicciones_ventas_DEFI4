@@ -659,18 +659,18 @@ if df is not None:
             """)
             
             success_metrics = {
-                'Población Promedio 100m': top_stores['pop_100m'].mean(),
-                'Tráfico Peatonal Promedio': top_stores['foot_traffic'].mean(),
-                'Comercios Cercanos': top_stores['commerces'].mean(),
-                'Nivel Socioeconómico': top_stores['socio_level'].mean()
+                "Población 100m": ("pop_100m", top_stores["pop_100m"].mean()),
+                "Tráfico Peatonal": ("foot_traffic", top_stores["foot_traffic"].mean()),
+                "Comercios Cercanos": ("commerces", top_stores["commerces"].mean()),
+                "Nivel Socioeconómico": ("socio_level", top_stores["socio_level"].mean())
             }
-            
-            for metric, value in success_metrics.items():
-                avg_value = df[metric.split()[0].lower() + '_' + metric.split()[1].lower() if len(metric.split()) > 1 else metric.lower().replace(' ', '_')].mean() if 'Promedio' not in metric else df[metric.replace(' Promedio', '').lower().replace(' ', '_')].mean()
+                        
+            for label, (col, value) in success_metrics.items():
+                avg_value = df[col].mean()
                 diff = ((value / avg_value - 1) * 100) if avg_value != 0 else 0
                 st.metric(
-                    metric,
-                    f"{value:.1f}",
+                    label,
+                    f"{value:,.1f}",
                     f"{diff:+.1f}% vs promedio"
                 )
             
