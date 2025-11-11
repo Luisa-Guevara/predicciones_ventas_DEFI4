@@ -34,7 +34,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header principal
-st.markdown('<h1 class="main-header">Sistema de Predicción de Ventas</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">💰 Sistema de Predicción de Ventas</h1>', unsafe_allow_html=True)
 st.markdown('<h3 style="text-align: center; color: #666;">Análisis y Predicción para Cadena de Retail</h3>', unsafe_allow_html=True)
 st.markdown('<h5 style="text-align: center; color: #666;">Desarrollado por: Juan David Bocanegra, María José Castillo y Luisa Guevara</h5>', unsafe_allow_html=True)
 
