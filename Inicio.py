@@ -88,11 +88,8 @@ try:
     st.subheader("Tiendas_100.csv (Top 5 registros)")
     st.dataframe(df_tiendas.head(5), use_container_width=True)
 
-    st.subheader("Ventas_funcionales.csv (Top 5 registros)")
-    st.dataframe(df_ventas.head(5), use_container_width=True)
-
     # Diccionario de datos (personalízalo si quieres)
-    st.markdown("### Variables Principales - Tiendas_100.csv")
+   
     dict_tiendas = {
         "Tienda": "Nombre o identificador de la tienda",
         "lat": "Latitud geográfica",
@@ -108,7 +105,11 @@ try:
     }
     st.table(pd.DataFrame(list(dict_tiendas.items()), columns=["Variable", "Descripción"]))
 
-    st.markdown("### Variables Principales - Ventas_funcioanles.csv")
+    st.markdown("---")
+
+    st.subheader("Ventas_funcionales.csv (Top 5 registros)")
+    st.dataframe(df_ventas.head(5), use_container_width=True)
+
     dict_ventas = {
         "Tienda": "Nombre o identificador de la tienda",
         "mes": "Número del mes analizado",
