@@ -158,7 +158,7 @@ if df is not None:
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    
+
     # Importancia de variables
     st.subheader("🔍 Importancia de Variables en el Modelo")
 
@@ -462,13 +462,6 @@ if df is not None:
             st.markdown("Ventas estimadas para el mes 24")
             st.markdown('</div>', unsafe_allow_html=True)
             
-                        # Opción para exportar predicción
-            st.download_button(
-                label="💾 Descargar Resultados",
-                data=new_data.assign(prediccion_ventas=prediction).to_csv(index=False),
-                file_name="prediccion_nueva_tienda.csv",
-                mime="text/csv"
-            )
 
 
             # Análisis comparativo
