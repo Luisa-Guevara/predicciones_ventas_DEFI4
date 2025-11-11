@@ -119,7 +119,7 @@ try:
 except FileNotFoundError as e:
     st.error(f"⚠️ Error al cargar los datos: {e}")
 
-
+st.markdown("---")
 
 # Instrucciones de uso
 

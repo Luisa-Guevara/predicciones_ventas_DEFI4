@@ -30,7 +30,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título
-st.title("📊 Análisis Exploratorio de Datos")
+st.title("Análisis Exploratorio de Datos")
 st.markdown("Explora las características de las tiendas y sus ventas")
 st.markdown("---")
 
