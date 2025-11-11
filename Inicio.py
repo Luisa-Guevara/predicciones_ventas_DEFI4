@@ -36,7 +36,7 @@ st.markdown("""
 # Header principal
 st.markdown('<h1 class="main-header">Sistema de Predicción de Ventas</h1>', unsafe_allow_html=True)
 st.markdown('<h3 style="text-align: center; color: #666;">Análisis y Predicción para Cadena de Retail</h3>', unsafe_allow_html=True)
-st.markdown('<h5 style="text-align: center; color: #666;">Juan David Bocanegra, María José Castillo y Luisa Guevara</h5>', unsafe_allow_html=True)
+st.markdown('<h5 style="text-align: center; color: #666;">Desarrollado por: Juan David Bocanegra, María José Castillo y Luisa Guevara</h5>', unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -47,7 +47,7 @@ with col1:
     st.markdown('<h2 class="sub-header">Descripción del Proyecto</h2>', unsafe_allow_html=True)
     
     st.markdown("""
-    Este modelo de **Machine Learning** ha sido desarrollado para predecir las ventas 
+    Este sistema aplica técnicas de **Machine Learning** para predecir las ventas 
     en el mes 24 de tiendas retail, utilizando información:
     
     - **Geográfica**: Ubicación y densidad poblacional
@@ -63,18 +63,18 @@ with col1:
     """)
 
 with col2:
-    st.markdown('<h2 class="sub-header">Datos Importantes</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Datos Generales</h2>', unsafe_allow_html=True)
     
     # Cargar datos para mostrar métricas
     try:
         df = pd.read_csv('data/Tiendas_100.csv')
         
-        st.metric("Total de Tiendas", f"{len(df):,}")
+        st.metric("Número de Tiendas", f"{len(df):,}")
         st.metric("Variables Analizadas", f"{len(df.columns)-1}")
         st.metric("Promedio de Ventas", f"${df['ventas_m24'].mean():,.0f}")
         
     except FileNotFoundError:
-        st.warning("⚠️ Datos no encontrados. Por favor, verifica la carpeta 'data'.")
+        st.warning("No se encontró el archivo 'Tiendas_100.csv' en la carpeta 'data'.")
 
 st.markdown("---")
 
@@ -85,7 +85,7 @@ try:
     df_ventas = pd.read_csv('data/Ventas_funcionales.csv')
 
     # Mostrar vista previa
-    st.subheader("Tiendas_100.csv (Top 5 registros)")
+    st.subheader("Vista previa de Tiendas_100.csv")
     st.dataframe(df_tiendas.head(5), use_container_width=True)
 
     # Diccionario de datos (personalízalo si quieres)
@@ -113,45 +113,43 @@ try:
 
     st.markdown("---")
 
-    st.subheader("Ventas_funcionales.csv (Top 5 registros)")
+    st.subheader("Vista previa de Ventas_funcionales.csv")
     st.dataframe(df_ventas.head(5), use_container_width=True)
 
 except FileNotFoundError as e:
-    st.error(f"⚠️ Error al cargar los datos: {e}")
+    st.error(f"No se pudo cargar uno de los archivos de datos: {e}")
 
 st.markdown("---")
 
 # Instrucciones de uso
 
-st.markdown('<h2 class="sub-header">¿Cómo Usar el Sistema?</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="sub-header">Guía de Uso del Sistema</h2>', unsafe_allow_html=True)
 
 with st.expander("Ver Instrucciones Detalladas"):
     st.markdown("""
-    ### Página 1: EDA y Análisis
-    1. **Estadísticas Generales**: Visualiza las métricas clave del dataset
-    2. **Distribuciones**: Analiza la distribución de ventas y otras variables
-    3. **Correlaciones**: Identifica relaciones entre variables
-    4. **Análisis Geográfico**: Explora la distribución espacial de las tiendas
-    
+    ### Página 1: Exploración y Análisis de Datos
+    1. Estadísticas generales del dataset
+    2. Distribuciones**: Analiza la distribuciones y correlaciones entre variables
+    3. Análisis geográfico
+                
     ### Página 2: Predicciones Geográficas
-    1. **Mapa Interactivo**: Visualiza tiendas existentes y predicciones
-    2. **Predicción Individual**: Ingresa datos para predecir ventas de una nueva tienda
-    3. **Análisis de Zona**: Evalúa el potencial de diferentes ubicaciones
-    4. **Recomendaciones**: Obtén insights basados en el modelo
+    1. Mapa interactivo con predicciones por tienda
+    2. Estimación de ventas para nuevas ubicaciones
+    3. Recomendaciones basadas en el modelo
     """)
 
 # Footer
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 2rem;">
-    <p>💡 <strong>Desarrollado con</strong> Streamlit</p>
-    <p>📧 Para soporte técnico, contacta al equipo de SDC</p>
+    <p><strong>Desarrollado con</strong> Streamlit</p>
+    <p> Para soporte técnico, contacta al equipo de SDC</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar con información adicional
 with st.sidebar:
     
-    st.markdown("### ⚙️ Configuración")
-    if st.button("🔄 Recargar Datos"):
+    st.markdown("### Configuración")
+    if st.button("Recargar Datos"):
         st.rerun()
