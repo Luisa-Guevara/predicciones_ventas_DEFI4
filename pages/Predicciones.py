@@ -136,7 +136,29 @@ if df is not None:
         st.metric("RMSE", f"${rmse:,.0f}")
 
     st.markdown("---")
+    # --- Tarjeta aclaratoria sobre la precisión ---
+    st.markdown("""
+    <div style="
+        background-color: #fff3cd;
+        border-left: 6px solid #ffcc00;
+        padding: 1.2rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        color: #856404;
+    ">
+        <h4 style="margin-top:0;">⚠️ Importante</h4>
+        <p>
+        Este modelo tiene un nivel de precisión <b>moderado (R² ≈ 0.68)</b>, 
+        lo que significa que no puede predecir las ventas con exactitud del 100%.<br><br>
+        Se recomienda usar estas predicciones como una <b>guía analítica</b> 
+        para apoyar la toma de decisiones, complementándolas siempre con 
+        <b>criterio experto y conocimiento del contexto comercial</b>.
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
+    st.markdown("---")
+    
     # Importancia de variables
     st.subheader("🔍 Importancia de Variables en el Modelo")
 
