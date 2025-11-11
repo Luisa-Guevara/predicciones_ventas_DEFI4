@@ -41,19 +41,42 @@ def load_data():
         df = pd.read_csv('data/Tiendas_100.csv')
         return df
     except FileNotFoundError:
-        st.error("❌ Error: No se encontró el archivo de datos")
+        st.error(" Error: No se encontró el archivo de datos")
         return None
 
 df = load_data()
 
+# --- Análisis rápido de calidad de datos ---
+if df is not None:
+    st.subheader(" Calidad de los Datos")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.write("**Valores nulos por columna:**")
+        missing = df.isnull().sum()
+        st.dataframe(missing[missing > 0], use_container_width=True)
+
+    with col2:
+        st.write("**Registros duplicados:**")
+        duplicates = df.duplicated().sum()
+        st.metric("Total duplicados", duplicates)
+        if duplicates > 0:
+            st.warning("Se encontraron registros duplicados.")
+        else:
+            st.success("No hay duplicados en el dataset.")
+    
+    st.markdown("---")
+
+
 if df is not None:
     # Tabs principales
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "📈 Resumen General", 
         "📊 Distribuciones", 
         "🔗 Correlaciones",
         "🗺️ Análisis Geográfico",
-        "🏪 Análisis por Tipo"
+        "🏪 Análisis por Tipo", 
+        "📉 Outliers"
     ])
     
     # TAB 1: RESUMEN GENERAL
@@ -183,6 +206,7 @@ if df is not None:
             fig_multi.update_layout(height=400, showlegend=False)
             st.plotly_chart(fig_multi, use_container_width=True)
     
+    
     # TAB 3: CORRELACIONES
     with tab3:
         st.header("🔗 Análisis de Correlaciones")
@@ -205,8 +229,8 @@ if df is not None:
             
             st.subheader("🎯 Insights Clave")
             top_feature = correlations.index[0]
-            st.success(f"✅ **{top_feature}** tiene la mayor correlación: {correlations.iloc[0]:.3f}")
-            st.info(f"💡 Variables poblacionales son predictores fuertes")
+            st.success(f" **{top_feature}** tiene la mayor correlación: {correlations.iloc[0]:.3f}")
+            st.info(f" Variables poblacionales son predictores fuertes")
         
         with col2:
             # Heatmap de correlaciones
@@ -318,6 +342,35 @@ if df is not None:
             color='store_cat'
         )
         st.plotly_chart(fig_comp, use_container_width=True)
+
+
+        # === TAB 6: OUTLIERS ===
+    tab6 = st.tabs(["📉 Outliers"])[0]
+
+    with tab6:
+        st.header("Análisis de Valores Atípicos")
+
+        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        selected_var = st.selectbox("Selecciona una variable para analizar:", numeric_cols)
+
+        fig_box_outliers = px.box(
+            df,
+            y=selected_var,
+            points="all",
+            title=f"Distribución y Outliers en {selected_var}",
+            color_discrete_sequence=['#667eea']
+        )
+        st.plotly_chart(fig_box_outliers, use_container_width=True)
+
+        q1 = df[selected_var].quantile(0.25)
+        q3 = df[selected_var].quantile(0.75)
+        iqr = q3 - q1
+        lower, upper = q1 - 1.5*iqr, q3 + 1.5*iqr
+        outliers = df[(df[selected_var] < lower) | (df[selected_var] > upper)]
+
+        st.write(f"Se detectaron **{len(outliers)} outliers** para la variable *{selected_var}*")
+        st.dataframe(outliers.head(5), use_container_width=True)
+
 
 else:
     st.error("No se pudieron cargar los datos. Verifica que el archivo esté en la carpeta 'data'.")
