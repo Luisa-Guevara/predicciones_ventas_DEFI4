@@ -124,9 +124,10 @@ except FileNotFoundError as e:
 
 
 # Instrucciones de uso
-st.markdown('<h2 class="sub-header">¿Cómo Usar el Sistema?'</h2>', unsafe_allow_html=True)
 
-with st.expander("📖 Ver Instrucciones Detalladas"):
+st.markdown('<h2 class="sub-header">¿Cómo Usar el Sistema?</h2>', unsafe_allow_html=True)
+
+with st.expander("Ver Instrucciones Detalladas"):
     st.markdown("""
     ### Página 1: EDA y Análisis
     1. **Estadísticas Generales**: Visualiza las métricas clave del dataset
