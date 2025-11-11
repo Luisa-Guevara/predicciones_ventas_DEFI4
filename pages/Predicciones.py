@@ -12,6 +12,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.pipeline import Pipeline
 import joblib
 import os
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
 # Configuración
 st.set_page_config(page_title="Predicciones Geográficas", page_icon="🗺️", layout="wide")
@@ -116,6 +117,54 @@ if df is not None:
     with st.spinner("🔄 Entrenando modelo..."):
         model, X_test, y_test = train_model(df)
     
+
+        # --- Evaluación del modelo ---
+    st.subheader("📈 Evaluación del Modelo de Predicción")
+
+    # Predicciones en el set de prueba
+    y_pred = model.predict(X_test)
+    r2 = r2_score(y_test, y_pred)
+    mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("R² Score", f"{r2:.3f}")
+    with col2:
+        st.metric("MAE", f"${mae:,.0f}")
+    with col3:
+        st.metric("RMSE", f"${rmse:,.0f}")
+
+    st.markdown("---")
+
+    # Importancia de variables
+    st.subheader("🔍 Importancia de Variables en el Modelo")
+
+    try:
+        # Recuperar nombres de features tras one-hot encoding
+        feature_names = model.named_steps["prep"].get_feature_names_out()
+        importances = model.named_steps["model"].feature_importances_
+
+        importance_df = pd.DataFrame({
+            "Variable": feature_names,
+            "Importancia": importances
+        }).sort_values(by="Importancia", ascending=False)
+
+        fig_imp = px.bar(
+            importance_df.head(15),
+            x="Importancia",
+            y="Variable",
+            orientation="h",
+            title="Principales Variables Predictoras",
+            color="Importancia",
+            color_continuous_scale="Blues"
+        )
+        st.plotly_chart(fig_imp, use_container_width=True)
+    except Exception as e:
+        st.warning(f"No se pudo calcular la importancia de variables: {e}")
+
+    st.markdown("---")
+
     # Tabs
     tab1, tab2, tab3, tab4 = st.tabs([
         "🗺️ Mapa Interactivo",
@@ -391,6 +440,15 @@ if df is not None:
             st.markdown("Ventas estimadas para el mes 24")
             st.markdown('</div>', unsafe_allow_html=True)
             
+                        # Opción para exportar predicción
+            st.download_button(
+                label="💾 Descargar Resultados",
+                data=new_data.assign(prediccion_ventas=prediction).to_csv(index=False),
+                file_name="prediccion_nueva_tienda.csv",
+                mime="text/csv"
+            )
+
+
             # Análisis comparativo
             col1, col2, col3 = st.columns(3)
             
