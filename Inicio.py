@@ -98,10 +98,16 @@ try:
         "ventas_m24": "Ventas en el mes 24",
         "pop_100m / 300m / 500m": "Población en distintos radios",
         "commerces": "Número de comercios cercanos",
+        "gas_stations": "Número de estaciones de gas cercanas",
+        "malls": "Número de centros comerciales cercanos",
         "foot_traffic": "Tráfico peatonal promedio",
         "car_traffic": "Tráfico vehicular promedio",
         "socio_level": "Nivel socioeconómico del área",
-        "competencia": "Número de tiendas competidoras"
+        "viviendas_100m": "Número de viviendas a un radio de 100m", 
+        "oficinas_100m": "Número de oficinas a un radio de 100m", 
+        "viviendas_pobreza": "Número de viviendas en pobreza cercanas", 
+        "competencia": "Número de tiendas competidoras",
+        "tiendas_peq": "Número de tiendas pequeñas",
     }
     st.table(pd.DataFrame(list(dict_tiendas.items()), columns=["Variable", "Descripción"]))
 
@@ -109,15 +115,6 @@ try:
 
     st.subheader("Ventas_funcionales.csv (Top 5 registros)")
     st.dataframe(df_ventas.head(5), use_container_width=True)
-
-    dict_ventas = {
-        "Tienda": "Nombre o identificador de la tienda",
-        "mes": "Número del mes analizado",
-        "ventas": "Monto total de ventas en ese mes",
-        "clientes": "Número de clientes atendidos",
-        "promedio_ticket": "Valor promedio del ticket de venta"
-    }
-    st.table(pd.DataFrame(list(dict_ventas.items()), columns=["Variable", "Descripción"]))
 
 except FileNotFoundError as e:
     st.error(f"⚠️ Error al cargar los datos: {e}")
@@ -147,22 +144,13 @@ with st.expander("Ver Instrucciones Detalladas"):
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666; padding: 2rem;">
-    <p>💡 <strong>Desarrollado con</strong> Streamlit, XGBoost y ❤️</p>
-    <p>📧 Para soporte técnico, contacta al equipo de Data Science</p>
+    <p>💡 <strong>Desarrollado con</strong> Streamlit</p>
+    <p>📧 Para soporte técnico, contacta al equipo de SDC</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar con información adicional
 with st.sidebar:
-    
-    st.markdown("### 📊 Variables Principales")
-    st.markdown("""
-    - Población en radio 100m, 300m, 500m
-    - Número de comercios cercanos
-    - Nivel socioeconómico
-    - Tráfico peatonal y vehicular
-    - Competencia en la zona
-    """)
     
     st.markdown("### ⚙️ Configuración")
     if st.button("🔄 Recargar Datos"):
