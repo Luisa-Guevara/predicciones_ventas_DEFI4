@@ -82,7 +82,7 @@ st.markdown('<h2 class="sub-header">Diccionario de Datos</h2>', unsafe_allow_htm
 
 try:
     df_tiendas = pd.read_csv('data/Tiendas_100.csv')
-    df_ventas = pd.read_csv('data/Ventas_funcioanles.csv')
+    df_ventas = pd.read_csv('data/Ventas_funcionales.csv')
 
     # Mostrar vista previa
     st.subheader("Tiendas_100.csv (Top 5 registros)")
