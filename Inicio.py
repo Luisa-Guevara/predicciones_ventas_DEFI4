@@ -88,7 +88,7 @@ try:
     st.subheader("Tiendas_100.csv (Top 5 registros)")
     st.dataframe(df_tiendas.head(5), use_container_width=True)
 
-    st.subheader("Ventas_funcioanles.csv (Top 5 registros)")
+    st.subheader("Ventas_funcionales.csv (Top 5 registros)")
     st.dataframe(df_ventas.head(5), use_container_width=True)
 
     # Diccionario de datos (personalízalo si quieres)
