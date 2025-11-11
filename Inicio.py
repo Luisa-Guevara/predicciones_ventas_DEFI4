@@ -5,7 +5,7 @@ from PIL import Image
 # Configuración de la página
 st.set_page_config(
     page_title="Sistema de Predicción de Ventas",
-    page_icon="🏪",
+    page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -34,8 +34,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header principal
-st.markdown('<h1 class="main-header">🏪 Sistema de Predicción de Ventas</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">Sistema de Predicción de Ventas</h1>', unsafe_allow_html=True)
 st.markdown('<h3 style="text-align: center; color: #666;">Análisis y Predicción para Cadena de Retail</h3>', unsafe_allow_html=True)
+st.markdown('<h5 style="text-align: center; color: #666;">Juan David Bocanegra, María José Castillo y Luisa Guevara</h5>', unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -43,26 +44,26 @@ st.markdown("---")
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown('<h2 class="sub-header">📋 Descripción del Proyecto</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Descripción del Proyecto</h2>', unsafe_allow_html=True)
     
     st.markdown("""
-    Este sistema de **Machine Learning** ha sido desarrollado para predecir las ventas 
+    Este modelo de **Machine Learning** ha sido desarrollado para predecir las ventas 
     en el mes 24 de tiendas retail, utilizando información:
     
-    - 📍 **Geográfica**: Ubicación y densidad poblacional
-    - 👥 **Sociodemográfica**: Nivel socioeconómico y características de vivienda
-    - 🏬 **Competencia**: Presencia de comercios cercanos
-    - 🚶 **Tráfico**: Flujo peatonal y vehicular
+    - **Geográfica**: Ubicación y densidad poblacional
+    - **Sociodemográfica**: Nivel socioeconómico y características de vivienda
+    - **Competencia**: Presencia de comercios cercanos
+    - **Tráfico**: Flujo peatonal y vehicular
     """)
     
-    st.markdown('<h2 class="sub-header">🎯 Objetivo</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Objetivo</h2>', unsafe_allow_html=True)
     st.info("""
     Identificar los factores clave que impulsan las ventas y predecir el 
     comportamiento de nuevas tiendas antes de su apertura.
     """)
 
 with col2:
-    st.markdown('<h2 class="sub-header">📊 Datos del Sistema</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Datos Importantes</h2>', unsafe_allow_html=True)
     
     # Cargar datos para mostrar métricas
     try:
@@ -77,79 +78,63 @@ with col2:
 
 st.markdown("---")
 
-# Características del sistema
-st.markdown('<h2 class="sub-header">✨ Características del Sistema</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="sub-header">Diccionario de Datos</h2>', unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns(3)
+try:
+    df_tiendas = pd.read_csv('data/Tiendas_100.csv')
+    df_ventas = pd.read_csv('data/Ventas_funcioanles.csv')
 
-with col1:
-    st.markdown("""
-    ### 📊 Análisis Exploratorio
-    - Visualizaciones interactivas
-    - Estadísticas descriptivas
-    - Correlaciones entre variables
-    - Distribuciones geográficas
-    """)
+    # Mostrar vista previa
+    st.subheader("Tiendas_100.csv (Top 5 registros)")
+    st.dataframe(df_tiendas.head(5), use_container_width=True)
 
-with col2:
-    st.markdown("""
-    ### 🤖 Modelos de ML
-    - Random Forest
-    - XGBoost optimizado
-    - Validación cruzada
-    - Métricas de performance
-    """)
+    st.subheader("Ventas_funcioanles.csv (Top 5 registros)")
+    st.dataframe(df_ventas.head(5), use_container_width=True)
 
-with col3:
-    st.markdown("""
-    ### 🗺️ Predicciones Espaciales
-    - Mapas interactivos
-    - Predicciones por ubicación
-    - Análisis de zonas
-    - Recomendaciones
-    """)
+    # Diccionario de datos (personalízalo si quieres)
+    st.markdown("### Variables Principales - Tiendas_100.csv")
+    dict_tiendas = {
+        "Tienda": "Nombre o identificador de la tienda",
+        "lat": "Latitud geográfica",
+        "lon": "Longitud geográfica",
+        "store_cat": "Categoría de la tienda",
+        "ventas_m24": "Ventas en el mes 24",
+        "pop_100m / 300m / 500m": "Población en distintos radios",
+        "commerces": "Número de comercios cercanos",
+        "foot_traffic": "Tráfico peatonal promedio",
+        "car_traffic": "Tráfico vehicular promedio",
+        "socio_level": "Nivel socioeconómico del área",
+        "competencia": "Número de tiendas competidoras"
+    }
+    st.table(pd.DataFrame(list(dict_tiendas.items()), columns=["Variable", "Descripción"]))
 
-st.markdown("---")
+    st.markdown("### Variables Principales - Ventas_funcioanles.csv")
+    dict_ventas = {
+        "Tienda": "Nombre o identificador de la tienda",
+        "mes": "Número del mes analizado",
+        "ventas": "Monto total de ventas en ese mes",
+        "clientes": "Número de clientes atendidos",
+        "promedio_ticket": "Valor promedio del ticket de venta"
+    }
+    st.table(pd.DataFrame(list(dict_ventas.items()), columns=["Variable", "Descripción"]))
 
-# Métricas del modelo
-st.markdown('<h2 class="sub-header">📈 Performance del Modelo</h2>', unsafe_allow_html=True)
+except FileNotFoundError as e:
+    st.error(f"⚠️ Error al cargar los datos: {e}")
 
-col1, col2, col3, col4 = st.columns(4)
 
-with col1:
-    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-    st.metric("R² Score", "0.85", "↑ Excelente")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col2:
-    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-    st.metric("RMSE", "$748", "↓ Bajo error")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col3:
-    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-    st.metric("MAE", "$460", "↓ Preciso")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-with col4:
-    st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-    st.metric("MAPE", "13.38%", "✓ Confiable")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown("---")
 
 # Instrucciones de uso
-st.markdown('<h2 class="sub-header">🚀 Cómo Usar el Sistema</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="sub-header">¿Cómo Usar el Sistema?'</h2>', unsafe_allow_html=True)
 
 with st.expander("📖 Ver Instrucciones Detalladas"):
     st.markdown("""
-    ### Página 1: 📊 EDA y Análisis
+    ### Página 1: EDA y Análisis
     1. **Estadísticas Generales**: Visualiza las métricas clave del dataset
     2. **Distribuciones**: Analiza la distribución de ventas y otras variables
     3. **Correlaciones**: Identifica relaciones entre variables
     4. **Análisis Geográfico**: Explora la distribución espacial de las tiendas
     
-    ### Página 2: 🗺️ Predicciones Geográficas
+    ### Página 2: Predicciones Geográficas
     1. **Mapa Interactivo**: Visualiza tiendas existentes y predicciones
     2. **Predicción Individual**: Ingresa datos para predecir ventas de una nueva tienda
     3. **Análisis de Zona**: Evalúa el potencial de diferentes ubicaciones
