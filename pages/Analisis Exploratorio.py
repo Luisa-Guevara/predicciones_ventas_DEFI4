@@ -206,7 +206,7 @@ if df is not None:
             fig_multi.update_layout(height=400, showlegend=False)
             st.plotly_chart(fig_multi, use_container_width=True)
     
-    
+
     # TAB 3: CORRELACIONES
     with tab3:
         st.header("🔗 Análisis de Correlaciones")
@@ -344,8 +344,6 @@ if df is not None:
         st.plotly_chart(fig_comp, use_container_width=True)
 
 
-        # === TAB 6: OUTLIERS ===
-    tab6 = st.tabs(["📉 Outliers"])[0]
 
     with tab6:
         st.header("Análisis de Valores Atípicos")
