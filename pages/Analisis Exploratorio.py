@@ -46,26 +46,26 @@ def load_data():
 
 df = load_data()
 
-# --- Análisis rápido de calidad de datos ---
-if df is not None:
-    st.subheader(" Calidad de los Datos")
-    col1, col2 = st.columns(2)
+# # --- Análisis rápido de calidad de datos ---
+# if df is not None:
+#     st.subheader(" Calidad de los Datos")
+#     col1, col2 = st.columns(2)
 
-    with col1:
-        st.write("**Valores nulos por columna:**")
-        missing = df.isnull().sum()
-        st.dataframe(missing[missing > 0], use_container_width=True)
+#     with col1:
+#         st.write("**Valores nulos por columna:**")
+#         missing = df.isnull().sum()
+#         st.dataframe(missing[missing > 0], use_container_width=True)
 
-    with col2:
-        st.write("**Registros duplicados:**")
-        duplicates = df.duplicated().sum()
-        st.metric("Total duplicados", duplicates)
-        if duplicates > 0:
-            st.warning("Se encontraron registros duplicados.")
-        else:
-            st.success("No hay duplicados en el dataset.")
+#     with col2:
+#         st.write("**Registros duplicados:**")
+#         duplicates = df.duplicated().sum()
+#         st.metric("Total duplicados", duplicates)
+#         if duplicates > 0:
+#             st.warning("Se encontraron registros duplicados.")
+#         else:
+#             st.success("No hay duplicados en el dataset.")
     
-    st.markdown("---")
+#     st.markdown("---")
 
 
 if df is not None:
@@ -108,17 +108,20 @@ if df is not None:
         
         st.markdown("---")
         
-        # Estadísticas descriptivas
-        col1, col2 = st.columns([2, 1])
+        # --- ESTADÍSTICAS DESCRIPTIVAS---
+        st.subheader("📋 Estadísticas Descriptivas - Variables Numéricas")
+
+        numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+        exclude_cols = ['lat', 'lon', 'socio_level']
+        numeric_cols = [col for col in numeric_cols if col not in exclude_cols]
+
+        st.dataframe(df[numeric_cols].describe().T, use_container_width=True)
+
+        st.subheader("📊 Estadísticas Descriptivas - Variables Categóricas")
+        col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("📋 Estadísticas Descriptivas - Variables Numéricas")
-            numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-            st.dataframe(df[numeric_cols].describe().T, use_container_width=True)
-        
-        with col2:
-            st.subheader("🏷️ Variables Categóricas")
-            st.write("**Tipos de Tienda:**")
+            #st.subheader("📊 Distribución por Tipo de Tienda")
             store_counts = df['store_cat'].value_counts()
             fig_pie = px.pie(
                 values=store_counts.values,
@@ -126,6 +129,17 @@ if df is not None:
                 title="Distribución por Tipo de Tienda"
             )
             st.plotly_chart(fig_pie, use_container_width=True)
+
+        with col2:
+            #st.subheader("📈 Distribución por Nivel Socioeconómico")
+            socio_counts = df['socio_level'].value_counts()
+            fig_bar = px.bar(
+                x=socio_counts.index,
+                y=socio_counts.values,
+                title="Distribución de Socio Level",
+                labels={'x': 'Nivel Socioeconómico', 'y': 'Frecuencia'}
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
     
     # TAB 2: DISTRIBUCIONES
     with tab2:
@@ -224,13 +238,6 @@ if df is not None:
         with col1:
             st.subheader("Top Correlaciones con Ventas")
             st.dataframe(correlations.head(10), use_container_width=True)
-            
-            st.markdown("---")
-            
-            st.subheader("🎯 Insights Clave")
-            top_feature = correlations.index[0]
-            st.success(f" **{top_feature}** tiene la mayor correlación: {correlations.iloc[0]:.3f}")
-            st.info(f" Variables poblacionales son predictores fuertes")
         
         with col2:
             # Heatmap de correlaciones
@@ -241,18 +248,30 @@ if df is not None:
                 aspect='auto'
             )
             st.plotly_chart(fig_corr, use_container_width=True)
+
+        st.markdown("---")
+        st.subheader("🎯 Insights Clave")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.success("**viviendas_100m** tiene la mayor correlación con ventas (0.923).")
+            st.info("Variables poblacionales cercanas son los predictores más fuertes.")
+            
+        with col2:
+            st.info("Zonas con más tráfico peatonal y oficinas también presentan mejores ventas.")
+            st.warning("Competencia cercana y gasolineras no muestran correlaciones relevantes.")
         
-        # Scatter matrix de top variables
-        st.subheader("🔍 Relaciones entre Top Variables")
-        top_vars = correlations.head(5).index.tolist() + ['ventas_m24']
-        fig_scatter_matrix = px.scatter_matrix(
-            df[top_vars],
-            dimensions=top_vars,
-            color='ventas_m24',
-            title="Matriz de Dispersión - Top 5 Variables"
-        )
-        fig_scatter_matrix.update_traces(diagonal_visible=False)
-        st.plotly_chart(fig_scatter_matrix, use_container_width=True)
+        # # Scatter matrix de top variables
+        # st.subheader("🔍 Relaciones entre Top Variables")
+        # top_vars = correlations.head(5).index.tolist() + ['ventas_m24']
+        # fig_scatter_matrix = px.scatter_matrix(
+        #     df[top_vars],
+        #     dimensions=top_vars,
+        #     color='ventas_m24',
+        #     title="Matriz de Dispersión - Top 5 Variables"
+        # )
+        # fig_scatter_matrix.update_traces(diagonal_visible=False)
+        # st.plotly_chart(fig_scatter_matrix, use_container_width=True)
     
     # TAB 4: ANÁLISIS GEOGRÁFICO
     with tab4:
@@ -342,7 +361,6 @@ if df is not None:
             color='store_cat'
         )
         st.plotly_chart(fig_comp, use_container_width=True)
-
 
 
     with tab6:
