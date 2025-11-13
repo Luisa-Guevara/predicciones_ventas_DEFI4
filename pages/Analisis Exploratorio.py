@@ -46,28 +46,6 @@ def load_data():
 
 df = load_data()
 
-# # --- Análisis rápido de calidad de datos ---
-# if df is not None:
-#     st.subheader(" Calidad de los Datos")
-#     col1, col2 = st.columns(2)
-
-#     with col1:
-#         st.write("**Valores nulos por columna:**")
-#         missing = df.isnull().sum()
-#         st.dataframe(missing[missing > 0], use_container_width=True)
-
-#     with col2:
-#         st.write("**Registros duplicados:**")
-#         duplicates = df.duplicated().sum()
-#         st.metric("Total duplicados", duplicates)
-#         if duplicates > 0:
-#             st.warning("Se encontraron registros duplicados.")
-#         else:
-#             st.success("No hay duplicados en el dataset.")
-    
-#     st.markdown("---")
-
-
 if df is not None:
     # Tabs principales
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
@@ -261,17 +239,6 @@ if df is not None:
             st.info("Zonas con más tráfico peatonal y oficinas también presentan mejores ventas.")
             st.warning("Competencia cercana y gasolineras no muestran correlaciones relevantes.")
         
-        # # Scatter matrix de top variables
-        # st.subheader("🔍 Relaciones entre Top Variables")
-        # top_vars = correlations.head(5).index.tolist() + ['ventas_m24']
-        # fig_scatter_matrix = px.scatter_matrix(
-        #     df[top_vars],
-        #     dimensions=top_vars,
-        #     color='ventas_m24',
-        #     title="Matriz de Dispersión - Top 5 Variables"
-        # )
-        # fig_scatter_matrix.update_traces(diagonal_visible=False)
-        # st.plotly_chart(fig_scatter_matrix, use_container_width=True)
     
     # TAB 4: ANÁLISIS GEOGRÁFICO
     with tab4:
