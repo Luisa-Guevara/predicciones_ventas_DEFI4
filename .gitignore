@@ -4,7 +4,6 @@
 *$py.class
 *.so
 .Python
-copy/
 env/
 venv/
 ENV/
