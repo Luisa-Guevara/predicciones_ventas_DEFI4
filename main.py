@@ -1,155 +1,19 @@
 import streamlit as st
-import pandas as pd
-from PIL import Image
 
 # Configuración de la página
 st.set_page_config(
     page_title="Sistema de Predicción de Ventas",
-    page_icon="📊",
+    page_icon="",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# CSS personalizado
-st.markdown("""
-    <style>
-    .main-header {
-        font-size: 3rem;
-        color: #1f77b4;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .sub-header {
-        font-size: 1.5rem;
-        color: #ff7f0e;
-        margin-top: 2rem;
-    }
-    .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
-    }
-    </style>
-""", unsafe_allow_html=True)
+# Definir las páginas
+all_pages = [
+    st.Page("pages/EDA.py", title="Análisis Exploratorio", default=True),
+    st.Page("pages/predicciones.py", title="Predicciones"),
+]
 
-# Header principal
-st.markdown('<h1 class="main-header">💰 Sistema de Predicción de Ventas</h1>', unsafe_allow_html=True)
-st.markdown('<h3 style="text-align: center; color: #666;">Análisis y Predicción para Cadena de Retail</h3>', unsafe_allow_html=True)
-st.markdown('<h5 style="text-align: center; color: #666;">Desarrollado por: Juan David Bocanegra, María José Castillo y Luisa Guevara</h5>', unsafe_allow_html=True)
-
-st.markdown("---")
-
-# Introducción
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    st.markdown('<h2 class="sub-header">Descripción del Proyecto</h2>', unsafe_allow_html=True)
-    
-    st.markdown("""
-    Este sistema aplica técnicas de **Machine Learning** para predecir las ventas 
-    en el mes 24 de tiendas retail, utilizando información:
-    
-    - **Geográfica**: Ubicación y densidad poblacional
-    - **Sociodemográfica**: Nivel socioeconómico y características de vivienda
-    - **Competencia**: Presencia de comercios cercanos
-    - **Tráfico**: Flujo peatonal y vehicular
-    """)
-    
-    st.markdown('<h2 class="sub-header">Objetivo</h2>', unsafe_allow_html=True)
-    st.info("""
-    Identificar los factores clave que impulsan las ventas y predecir el 
-    comportamiento de nuevas tiendas antes de su apertura.
-    """)
-
-with col2:
-    st.markdown('<h2 class="sub-header">Datos Generales</h2>', unsafe_allow_html=True)
-    
-    # Cargar datos para mostrar métricas
-    try:
-        df = pd.read_csv('data/Tiendas_100.csv')
-        
-        st.metric("Número de Tiendas", f"{len(df):,}")
-        st.metric("Variables Analizadas", f"{len(df.columns)-1}")
-        st.metric("Promedio de Ventas", f"${df['ventas_m24'].mean():,.0f}")
-        
-    except FileNotFoundError:
-        st.warning("No se encontró el archivo 'Tiendas_100.csv' en la carpeta 'data'.")
-
-st.markdown("---")
-
-st.markdown('<h2 class="sub-header">Diccionario de Datos</h2>', unsafe_allow_html=True)
-
-try:
-    df_tiendas = pd.read_csv('data/Tiendas_100.csv')
-    df_ventas = pd.read_csv('data/Ventas_funcionales.csv')
-
-    # Mostrar vista previa
-    st.subheader("Vista previa de Tiendas_100.csv")
-    st.dataframe(df_tiendas.head(5), use_container_width=True)
-
-    # Diccionario de datos (personalízalo si quieres)
-   
-    dict_tiendas = {
-        "Tienda": "Nombre o identificador de la tienda",
-        "lat": "Latitud geográfica",
-        "lon": "Longitud geográfica",
-        "store_cat": "Categoría de la tienda",
-        "ventas_m24": "Ventas en el mes 24",
-        "pop_100m / 300m / 500m": "Población en distintos radios",
-        "commerces": "Número de comercios cercanos",
-        "gas_stations": "Número de estaciones de gas cercanas",
-        "malls": "Número de centros comerciales cercanos",
-        "foot_traffic": "Tráfico peatonal promedio",
-        "car_traffic": "Tráfico vehicular promedio",
-        "socio_level": "Nivel socioeconómico del área",
-        "viviendas_100m": "Número de viviendas a un radio de 100m", 
-        "oficinas_100m": "Número de oficinas a un radio de 100m", 
-        "viviendas_pobreza": "Número de viviendas en pobreza cercanas", 
-        "competencia": "Número de tiendas competidoras",
-        "tiendas_peq": "Número de tiendas pequeñas",
-    }
-    st.table(pd.DataFrame(list(dict_tiendas.items()), columns=["Variable", "Descripción"]))
-
-    st.markdown("---")
-
-    st.subheader("Vista previa de Ventas_funcionales.csv")
-    st.dataframe(df_ventas.head(5), use_container_width=True)
-
-except FileNotFoundError as e:
-    st.error(f"No se pudo cargar uno de los archivos de datos: {e}")
-
-st.markdown("---")
-
-# Instrucciones de uso
-
-st.markdown('<h2 class="sub-header">Guía de Uso del Sistema</h2>', unsafe_allow_html=True)
-
-with st.expander("Ver Instrucciones Detalladas"):
-    st.markdown("""
-    ### Página 1: Exploración y Análisis de Datos
-    1. Estadísticas generales del dataset
-    2. Distribuciones**: Analiza la distribuciones y correlaciones entre variables
-    3. Análisis geográfico
-                
-    ### Página 2: Predicciones Geográficas
-    1. Mapa interactivo con predicciones por tienda
-    2. Estimación de ventas para nuevas ubicaciones
-    3. Recomendaciones basadas en el modelo
-    """)
-
-# Footer
-st.markdown("---")
-st.markdown("""
-<div style="text-align: center; color: #666; padding: 2rem;">
-    <p><strong>Desarrollado con</strong> Streamlit</p>
-    <p> Para soporte técnico, contacta al equipo de SDC</p>
-</div>
-""", unsafe_allow_html=True)
-
-# Sidebar con información adicional
-with st.sidebar:
-    
-    st.markdown("### Configuración")
-    if st.button("Recargar Datos"):
-        st.rerun()
+# Navegación
+pg = st.navigation(all_pages)
+pg.run()

@@ -23,7 +23,8 @@ from utils.functional_analysis import (
     CLUSTER_COLORS
 )
 # Configuración
-st.set_page_config(page_title="Predicciones Geográficas", page_icon="🗺️", layout="wide")
+st.set_page_config(page_title="Predicciones Geográficas",
+                   page_icon="", layout="wide")
 
 # CSS personalizado
 st.markdown("""
@@ -49,11 +50,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Título
-st.title("🗺️ Predicciones Geográficas de Ventas")
-st.markdown("Predice ventas para nuevas ubicaciones y visualiza el mapa de oportunidades")
+st.title("Predicciones Geográficas de Ventas")
+st.markdown(
+    "Predice ventas para nuevas ubicaciones y visualiza el mapa de oportunidades")
 st.markdown("---")
 
 # Cargar datos
+
+
 @st.cache_data
 def load_data():
     try:
@@ -64,6 +68,8 @@ def load_data():
         return None
 
 # Entrenar o cargar modelo
+
+
 @st.cache_resource
 def train_model(df):
     # Preparar datos
@@ -73,26 +79,26 @@ def train_model(df):
         'socio_level', 'viviendas_100m', 'oficinas_100m', 'viviendas_pobreza',
         'competencia', 'tiendas_peq'
     ]
-    
+
     X = df[feature_cols].copy()
     y = df["ventas_m24"].copy()
-    
+
     # Separar train/test
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=28
     )
-    
+
     # Preprocesamiento
     cat_features = ["store_cat"]
     num_features = [c for c in feature_cols if c not in cat_features]
-    
+
     preprocess = ColumnTransformer(
         transformers=[
             ("cat", OneHotEncoder(handle_unknown="ignore"), cat_features),
             ("num", "passthrough", num_features)
         ]
     )
-    
+
     # Modelo Random Forest
     rf = RandomForestRegressor(
         n_estimators=200,
@@ -102,43 +108,44 @@ def train_model(df):
         random_state=42,
         n_jobs=-1
     )
-    
+
     # Pipeline
     pipe = Pipeline(steps=[
         ("prep", preprocess),
         ("model", rf)
     ])
-    
+
     # Entrenar
     pipe.fit(X_train, y_train)
-    
+
     # Guardar modelo
     os.makedirs('models', exist_ok=True)
     joblib.dump(pipe, 'models/sales_model.pkl')
-    
+
     return pipe, X_test, y_test
+
 
 df = load_data()
 
 
 if df is not None:
     # Entrenar modelo
-    with st.spinner("🔄 Entrenando modelo..."):
+    with st.spinner("Entrenando modelo..."):
         model, X_test, y_test = train_model(df)
 
     # Tabs
     tab1, tab2, tab3, tab4 = st.tabs([
-        "📋 Descripción Modelo",
-        "🗺️ Mapa Interactivo",
-        "🎯 Predicción Individual",
-        #"📊 Análisis de Zona",
-        "💡 Recomendaciones"
+        "Descripción Modelo",
+        "Mapa Interactivo",
+        "Predicción Individual",
+        # "Análisis de Zona",
+        "Recomendaciones"
     ])
 
     # TAB 1: DESCRIPCIÓN
     with tab1:
        # --- Evaluación del modelo ---
-        st.subheader("📈 Evaluación del Modelo de Predicción")
+        st.subheader("Evaluación del Modelo de Predicción")
 
         # Predicciones en el set de prueba
         y_pred = model.predict(X_test)
@@ -165,7 +172,7 @@ if df is not None:
             margin-bottom: 1rem;
             color: #856404;
         ">
-            <h4 style="margin-top:0;">⚠️ Importante</h4>
+            <h4 style="margin-top:0;">Importante</h4>
             <p>
             Este modelo tiene un nivel de precisión <b>moderado (R² ≈ 0.68)</b>, 
             lo que significa que no puede predecir las ventas con exactitud del 100%.<br><br>
@@ -213,29 +220,29 @@ if df is not None:
 
     # TAB 2: MAPA INTERACTIVO
     with tab2:
-        st.header("🗺️ Mapa de Tiendas y Predicciones")
-        
+        st.header("Mapa de Tiendas y Predicciones")
+
         col1, col2 = st.columns([2, 1])
-        
+
         with col2:
-            st.subheader("⚙️ Filtros")
-            
+            st.subheader("Filtros")
+
             # Filtros
             tipo_tienda_filter = st.multiselect(
                 "Tipo de Tienda:",
                 df['store_cat'].unique(),
                 default=df['store_cat'].unique()
             )
-            
+
             venta_min, venta_max = st.slider(
                 "Rango de Ventas:",
                 float(df['ventas_m24'].min()),
                 float(df['ventas_m24'].max()),
                 (float(df['ventas_m24'].min()), float(df['ventas_m24'].max()))
             )
-            
+
             mostrar_heatmap = st.checkbox("Mostrar mapa de calor", value=False)
-        
+
         with col1:
             # Filtrar datos
             df_filtered = df[
@@ -243,17 +250,17 @@ if df is not None:
                 (df['ventas_m24'] >= venta_min) &
                 (df['ventas_m24'] <= venta_max)
             ]
-            
+
             # Crear mapa base
             center_lat = df_filtered['lat'].mean()
             center_lon = df_filtered['lon'].mean()
-            
+
             m = folium.Map(
                 location=[center_lat, center_lon],
                 zoom_start=12,
                 tiles='OpenStreetMap'
             )
-            
+
             # Agregar marcadores
             for idx, row in df_filtered.iterrows():
                 # Color según ventas
@@ -266,7 +273,7 @@ if df is not None:
                 else:
                     color = 'orange'
                     icon = 'shopping-cart'
-                
+
                 folium.Marker(
                     location=[row['lat'], row['lon']],
                     popup=f"""
@@ -281,14 +288,14 @@ if df is not None:
                     icon=folium.Icon(color=color, icon=icon, prefix='fa'),
                     tooltip=f"{row['Tienda']}: ${row['ventas_m24']:,.0f}"
                 ).add_to(m)
-            
+
             # Mapa de calor si está activado
             if mostrar_heatmap:
                 from folium.plugins import HeatMap
-                heat_data = [[row['lat'], row['lon'], row['ventas_m24']] 
-                            for idx, row in df_filtered.iterrows()]
+                heat_data = [[row['lat'], row['lon'], row['ventas_m24']]
+                             for idx, row in df_filtered.iterrows()]
                 HeatMap(heat_data).add_to(m)
-            
+
             # Agregar leyenda
             legend_html = '''
             <div style="position: fixed; 
@@ -301,37 +308,39 @@ if df is not None:
             </div>
             '''
             m.get_root().html.add_child(folium.Element(legend_html))
-            
+
             folium_static(m, width=800, height=600)
 
-                    # Estadísticas del área filtrada
+            # Estadísticas del área filtrada
             st.markdown("---")
-            st.subheader("📊 Estadísticas del Área Seleccionada")
-            
+            st.subheader("Estadísticas del Área Seleccionada")
+
             col1, col2, col3, col4 = st.columns(4)
             with col1:
                 st.metric("Tiendas", len(df_filtered))
             with col2:
-                st.metric("Venta Promedio", f"${df_filtered['ventas_m24'].mean():,.0f}")
+                st.metric("Venta Promedio",
+                          f"${df_filtered['ventas_m24'].mean():,.0f}")
             with col3:
-                st.metric("Venta Total", f"${df_filtered['ventas_m24'].sum():,.0f}")
+                st.metric("Venta Total",
+                          f"${df_filtered['ventas_m24'].sum():,.0f}")
             with col4:
-                st.metric("Densidad Promedio", f"{df_filtered['pop_100m'].mean():.0f}")
-        
+                st.metric("Densidad Promedio",
+                          f"{df_filtered['pop_100m'].mean():.0f}")
 
     # TAB 3: PREDICCIÓN INDIVIDUAL
     with tab3:
-        st.header("🎯 Predicción de Ventas para Nueva Tienda")
+        st.header("Predicción de Ventas para Nueva Tienda")
         st.markdown(
-        "En esta sección puedes definir las características de una nueva ubicación "
-        "para estimar sus **ventas potenciales** con base en el modelo entrenado.")
-        
+            "En esta sección puedes definir las características de una nueva ubicación "
+            "para estimar sus **ventas potenciales** con base en el modelo entrenado.")
+
         col1, col2 = st.columns([1, 1])
-        
+
         with col1:
             st.markdown('<div class="input-section">', unsafe_allow_html=True)
-            st.subheader("📍 Ubicación y Características")
-            
+            st.subheader("Ubicación y Características")
+
             # Inputs geográficos
             col_a, col_b = st.columns(2)
             with col_a:
@@ -348,16 +357,16 @@ if df is not None:
                     format="%.6f",
                     help="Coordenada de longitud de la nueva tienda"
                 )
-            
+
             store_cat_pred = st.selectbox(
                 "Tipo de Tienda",
                 df['store_cat'].unique(),
                 help="Categoría de la tienda"
             )
-            
+
             st.markdown("---")
             st.subheader("👥 Datos Demográficos")
-            
+
             col_c, col_d = st.columns(2)
             with col_c:
                 pop_100m = st.number_input(
@@ -381,13 +390,13 @@ if df is not None:
                     1, 6, 3,
                     help="Nivel socioeconómico del área (1=bajo, 6=alto)"
                 )
-            
+
             st.markdown('</div>', unsafe_allow_html=True)
-        
+
         with col2:
             st.markdown('<div class="input-section">', unsafe_allow_html=True)
             st.subheader("🏬 Entorno Comercial")
-            
+
             col_e, col_f = st.columns(2)
             with col_e:
                 commerces = st.number_input(
@@ -421,10 +430,10 @@ if df is not None:
                     value=int(df['competencia'].mean()),
                     help="Número de competidores cercanos"
                 )
-            
+
             st.markdown("---")
-            st.subheader("🏘️ Características del Área")
-            
+            st.subheader("Características del Área")
+
             col_g, col_h = st.columns(2)
             with col_g:
                 viviendas_100m = st.number_input(
@@ -444,7 +453,7 @@ if df is not None:
                     "Tiendas Pequeñas",
                     value=int(df['tiendas_peq'].mean())
                 )
-            
+
             st.markdown('</div>', unsafe_allow_html=True)
 
         # Botón de predicción
@@ -470,23 +479,24 @@ if df is not None:
                 'competencia': [competencia],
                 'tiendas_peq': [tiendas_peq]
             })
-            
+
             # Predecir
             prediction = model.predict(new_data)[0]
-            
+
             # Mostrar resultado
             st.markdown("---")
-            st.markdown('<div class="prediction-card">', unsafe_allow_html=True)
-            st.markdown("## 💰 Predicción de Ventas Mes 24")
+            st.markdown('<div class="prediction-card">',
+                        unsafe_allow_html=True)
+            st.markdown("## Predicción de Ventas Mes 24")
             st.markdown(f"### ${prediction:,.2f}")
             st.markdown("Ventas estimadas para el mes 24")
             st.markdown('</div>', unsafe_allow_html=True)
-            
+
             # Análisis comparativo
             col1, col2, col3 = st.columns(3)
-            
+
             percentile = (df['ventas_m24'] < prediction).mean() * 100
-            
+
             with col1:
                 st.metric(
                     "Comparación con Promedio",
@@ -507,65 +517,70 @@ if df is not None:
                 else:
                     clasificacion = "🟠 Regular"
                 st.metric("Clasificación", clasificacion)
-        
+
             # ===== ANÁLISIS FUNCIONAL DE VENTAS (AUTOMÁTICO) =====
             st.markdown("---")
-            st.markdown("## 📈 Proyección de Ventas Mensuales (Meses 1-24)")
-            
+            st.markdown("## Proyección de Ventas Mensuales (Meses 1-24)")
+
             # Cargar datos funcionales
-            with st.spinner("📊 Calculando proyección funcional con clustering automático..."):
+            with st.spinner("Calculando proyección funcional con clustering automático..."):
                 df_func, periodos, ventas = load_functional_sales()
-                
+
                 if df_func is not None:
                     # Calcular clusters AUTOMÁTICAMENTE
                     labels, fd_eval, eval_points, Z, coef, k_opt, sil_scores = compute_clusters_automatic(
                         ventas, periodos
                     )
-                    
-                    st.success(f"✅ Clustering automático completado: **K = {k_opt} clusters** (Silhouette Score: {sil_scores[k_opt]:.3f})")
-                    
+
+                    st.success(
+                        f"Clustering automático completado: **K = {k_opt} clusters** (Silhouette Score: {sil_scores[k_opt]:.3f})")
+
                     # Asignar cluster AUTOMÁTICAMENTE
-                    cluster_asignado = assign_cluster_by_sales(prediction, fd_eval, labels, k_opt)
-                    
-                    st.info(f"🎯 Nueva tienda asignada automáticamente al **Cluster {cluster_asignado}** (mejor ajuste según ventas)")
-                    
+                    cluster_asignado = assign_cluster_by_sales(
+                        prediction, fd_eval, labels, k_opt)
+
+                    st.info(
+                        f"Nueva tienda asignada automáticamente al **Cluster {cluster_asignado}** (mejor ajuste según ventas)")
+
                     # Estimar curva ajustada al mes 24
                     estimacion, mean_cluster, curvas_cluster = estimate_sales_curve(
                         fd_eval, labels, cluster_asignado, prediction
                     )
-                    
+
                     # Crear DataFrame de estimación
                     df_estimacion = pd.DataFrame({
                         "Mes": eval_points,
                         "Ventas_Estimadas": np.ravel(estimacion)
                     })
-                    
+
                     # ===== GRÁFICA PRINCIPAL =====
                     fig_main = go.Figure()
-                    
+
                     # Curvas del cluster (fondo)
                     for idx, y in enumerate(curvas_cluster):
                         fig_main.add_trace(go.Scatter(
                             x=eval_points,
                             y=y.ravel(),  # CORRECCIÓN: aplanar array
                             mode='lines',
-                            line=dict(color=CLUSTER_COLORS.get(cluster_asignado, '#999'), width=0.5),
+                            line=dict(color=CLUSTER_COLORS.get(
+                                cluster_asignado, '#999'), width=0.5),
                             opacity=0.15,
                             showlegend=(idx == 0),
                             name=f"Tiendas Cluster {cluster_asignado}",
                             hoverinfo='skip',
                             legendgroup='cluster'
                         ))
-                    
+
                     # Media del cluster
                     fig_main.add_trace(go.Scatter(
                         x=eval_points,
                         y=mean_cluster.ravel(),  # CORRECCIÓN: aplanar array
                         mode='lines',
-                        line=dict(color=CLUSTER_COLORS.get(cluster_asignado, '#999'), width=3, dash='dash'),
+                        line=dict(color=CLUSTER_COLORS.get(
+                            cluster_asignado, '#999'), width=3, dash='dash'),
                         name=f"Media Cluster {cluster_asignado}"
                     ))
-                    
+
                     # Curva estimada para nueva tienda
                     fig_main.add_trace(go.Scatter(
                         x=eval_points,
@@ -575,7 +590,7 @@ if df is not None:
                         marker=dict(size=4),
                         name="Nueva Tienda (estimada)"
                     ))
-                    
+
                     # Punto del mes 24 (dato real de predicción)
                     fig_main.add_trace(go.Scatter(
                         x=[24],
@@ -584,7 +599,7 @@ if df is not None:
                         marker=dict(color='black', size=12, symbol='star'),
                         name="Predicción Mes 24"
                     ))
-                    
+
                     fig_main.update_layout(
                         title=f"Proyección de Ventas - Nueva Tienda (Cluster {cluster_asignado} de {k_opt})",
                         xaxis_title="Mes",
@@ -594,78 +609,87 @@ if df is not None:
                         template='plotly_white',
                         showlegend=True
                     )
-                    
+
                     st.plotly_chart(fig_main, use_container_width=True)
-                    
+
                     # Tabla de estimaciones
                     col_tabla1, col_tabla2 = st.columns(2)
                     with col_tabla1:
                         st.markdown("**📅 Meses 1-12**")
                         st.dataframe(
-                            df_estimacion.head(12).style.format({"Ventas_Estimadas": "${:,.2f}"}),
+                            df_estimacion.head(12).style.format(
+                                {"Ventas_Estimadas": "${:,.2f}"}),
                             use_container_width=True,
                             hide_index=True
                         )
                     with col_tabla2:
                         st.markdown("**📅 Meses 13-24**")
                         st.dataframe(
-                            df_estimacion.tail(12).style.format({"Ventas_Estimadas": "${:,.2f}"}),
+                            df_estimacion.tail(12).style.format(
+                                {"Ventas_Estimadas": "${:,.2f}"}),
                             use_container_width=True,
                             hide_index=True
                         )
-                    
+
                     # ===== BOTÓN EXPANDIBLE PARA EXPLORAR CLUSTER =====
                     with st.expander("🔍 **Explorar más sobre el Cluster y Análisis**", expanded=False):
-                        st.markdown(f"### 📊 Análisis Detallado - Cluster {cluster_asignado}")
-                        
+                        st.markdown(
+                            f"### Análisis Detallado - Cluster {cluster_asignado}")
+
                         # Métricas del cluster
                         col_m1, col_m2, col_m3 = st.columns(3)
                         with col_m1:
-                            n_tiendas_cluster = int((labels == cluster_asignado).sum())
+                            n_tiendas_cluster = int(
+                                (labels == cluster_asignado).sum())
                             st.metric("Tiendas en Cluster", n_tiendas_cluster)
                         with col_m2:
                             venta_prom_cluster = float(mean_cluster[-1])
-                            st.metric("Venta Promedio Mes 24", f"${venta_prom_cluster:,.2f}")
+                            st.metric("Venta Promedio Mes 24",
+                                      f"${venta_prom_cluster:,.2f}")
                         with col_m3:
                             desv_cluster = float(curvas_cluster[:, -1].std())
-                            st.metric("Desviación Estándar", f"${desv_cluster:,.2f}")
-                        
+                            st.metric("Desviación Estándar",
+                                      f"${desv_cluster:,.2f}")
+
                         # ===== PANEL DE CLUSTERS =====
                         st.markdown("---")
-                        st.markdown("#### 📈 Comparación entre Todos los Clusters")
-                        
+                        st.markdown(
+                            "#### Comparación entre Todos los Clusters")
+
                         # Gráfica comparativa de todos los clusters
                         fig_clusters = go.Figure()
-                        
+
                         for k in range(1, k_opt + 1):
                             idx_k = (labels == k)
                             curvas_k = fd_eval[idx_k]
                             mean_k = curvas_k.mean(axis=0)
                             n_tiendas_k = int(idx_k.sum())
-                            
+
                             # Todas las curvas del cluster
                             for idx, y in enumerate(curvas_k):
                                 fig_clusters.add_trace(go.Scatter(
                                     x=eval_points,
                                     y=y.ravel(),  # CORRECCIÓN
                                     mode='lines',
-                                    line=dict(color=CLUSTER_COLORS.get(k, '#999'), width=0.5),
+                                    line=dict(color=CLUSTER_COLORS.get(
+                                        k, '#999'), width=0.5),
                                     opacity=0.15,
                                     showlegend=False,
                                     hoverinfo='skip',
                                     legendgroup=f'cluster{k}'
                                 ))
-                            
+
                             # Media del cluster
                             fig_clusters.add_trace(go.Scatter(
                                 x=eval_points,
                                 y=mean_k.ravel(),  # CORRECCIÓN
                                 mode='lines',
-                                line=dict(color=CLUSTER_COLORS.get(k, '#999'), width=4),
+                                line=dict(color=CLUSTER_COLORS.get(
+                                    k, '#999'), width=4),
                                 name=f"Cluster {k} (n={n_tiendas_k})",
                                 legendgroup=f'cluster{k}'
                             ))
-                        
+
                         fig_clusters.update_layout(
                             title=f"Comparación de {k_opt} Clusters de Comportamiento",
                             xaxis_title="Mes",
@@ -674,11 +698,11 @@ if df is not None:
                             height=500,
                             template='plotly_white'
                         )
-                        
+
                         st.plotly_chart(fig_clusters, use_container_width=True)
-                        
+
                         # Tabla resumen de clusters
-                        st.markdown("#### 📋 Resumen de Clusters")
+                        st.markdown("#### Resumen de Clusters")
                         cluster_summary = []
                         for k in range(1, k_opt + 1):
                             idx_k = (labels == k)
@@ -691,22 +715,24 @@ if df is not None:
                                 'Venta Media M24': f"${mean_k24:,.2f}",
                                 'Desv. Estándar': f"${std_k24:,.2f}"
                             })
-                        
+
                         df_summary = pd.DataFrame(cluster_summary)
-                        st.dataframe(df_summary, use_container_width=True, hide_index=True)
-                        
+                        st.dataframe(
+                            df_summary, use_container_width=True, hide_index=True)
+
                         # ===== DENDROGRAMA =====
                         st.markdown("---")
                         st.markdown("#### 🌳 Dendrograma Jerárquico")
-                        
+
                         from scipy.cluster.hierarchy import dendrogram as scipy_dendrogram
-                        
+
                         fig_dend = go.Figure()
-                        dend_data = scipy_dendrogram(Z, no_plot=True, truncate_mode='lastp', p=30)
-                        
+                        dend_data = scipy_dendrogram(
+                            Z, no_plot=True, truncate_mode='lastp', p=30)
+
                         icoord = np.array(dend_data['icoord'])
                         dcoord = np.array(dend_data['dcoord'])
-                        
+
                         for i in range(len(icoord)):
                             fig_dend.add_trace(go.Scatter(
                                 x=icoord[i],
@@ -716,7 +742,7 @@ if df is not None:
                                 showlegend=False,
                                 hoverinfo='skip'
                             ))
-                        
+
                         fig_dend.update_layout(
                             title="Dendrograma de Clustering Jerárquico (Ward)",
                             xaxis_title="Índice de Tienda",
@@ -724,18 +750,19 @@ if df is not None:
                             height=400,
                             template='plotly_white'
                         )
-                        
+
                         st.plotly_chart(fig_dend, use_container_width=True)
-                        
+
                         # ===== SILHOUETTE SCORES =====
                         st.markdown("---")
-                        st.markdown("#### 📏 Evaluación de Clustering (Silhouette Score)")
-                        
+                        st.markdown(
+                            "#### 📏 Evaluación de Clustering (Silhouette Score)")
+
                         df_sil = pd.DataFrame({
                             'K': list(sil_scores.keys()),
                             'Silhouette_Score': list(sil_scores.values())
                         })
-                        
+
                         fig_sil = px.line(
                             df_sil,
                             x='K',
@@ -749,39 +776,41 @@ if df is not None:
                             line_color="red",
                             annotation_text=f"K={k_opt} (óptimo)"
                         )
-                        fig_sil.update_traces(marker=dict(size=8), line=dict(width=2))
-                        
+                        fig_sil.update_traces(
+                            marker=dict(size=8), line=dict(width=2))
+
                         st.plotly_chart(fig_sil, use_container_width=True)
-                        
+
                         st.success(f"""
-                        ✅ **Interpretación:** El análisis automático determinó que **K={k_opt}** es el número 
+**Interpretación:** El análisis automático determinó que **K={k_opt}** es el número 
                         óptimo de clusters con un Silhouette Score de **{sil_scores[k_opt]:.3f}**. 
                         Esto indica una buena separación entre grupos de comportamiento de ventas.
                         """)
                 else:
-                    st.error("❌ No se pudieron cargar los datos de ventas funcionales. Verifica que el archivo exista en `data/ventas_funcionales.csv`")
-            
+                    st.error(
+                        "❌ No se pudieron cargar los datos de ventas funcionales. Verifica que el archivo exista en `data/ventas_funcionales.csv`")
+
             # Recomendaciones
             st.markdown("---")
-            st.subheader("💡 Análisis y Recomendaciones")
-            
+            st.subheader("Análisis y Recomendaciones")
+
             if prediction > df['ventas_m24'].quantile(0.75):
                 st.success("""
-                ✅ **Ubicación Altamente Prometedora**
+**Ubicación Altamente Prometedora**
                 - Las ventas proyectadas superan el 75% de las tiendas existentes
                 - Excelente potencial de retorno de inversión
                 - Se recomienda proceder con la apertura
                 """)
             elif prediction > df['ventas_m24'].median():
                 st.info("""
-                ℹ️ **Ubicación con Buen Potencial**
+**Ubicación con Buen Potencial**
                 - Ventas por encima del promedio
                 - Ubicación viable con potencial de crecimiento
                 - Considerar optimizaciones en marketing local
                 """)
             else:
                 st.warning("""
-                ⚠️ **Ubicación Requiere Análisis Adicional**
+**Ubicación Requiere Análisis Adicional**
                 - Ventas proyectadas bajo el promedio
                 - Se recomienda evaluar factores adicionales
                 - Considerar estrategias de diferenciación
@@ -789,14 +818,14 @@ if df is not None:
 
         # # TAB 4: ANÁLISIS DE ZONA
         # with tab4:
-        #     st.header("📊 Análisis de Potencial por Zona")
-            
+        #     st.header("Análisis de Potencial por Zona")
+
         #     # Crear grid de predicciones
-        #     st.subheader("🗺️ Mapa de Calor de Potencial de Ventas")
-            
-        #     with st.expander("⚙️ Configurar Análisis de Zona"):
+        #     st.subheader("Mapa de Calor de Potencial de Ventas")
+
+        #     with st.expander("Configurar Análisis de Zona"):
         #         col1, col2 = st.columns(2)
-                
+
         #         with col1:
         #             lat_min = st.number_input(
         #                 "Latitud Mínima",
@@ -808,7 +837,7 @@ if df is not None:
         #                 value=float(df['lat'].max()),
         #                 format="%.6f"
         #             )
-                
+
         #         with col2:
         #             lon_min = st.number_input(
         #                 "Longitud Mínima",
@@ -820,21 +849,21 @@ if df is not None:
         #                 value=float(df['lon'].max()),
         #                 format="%.6f"
         #             )
-                
+
         #         grid_size = st.slider("Resolución del Grid", 5, 20, 10)
         #         tipo_analisis = st.selectbox(
         #             "Tipo de Tienda para Análisis",
         #             df['store_cat'].unique()
         #         )
-            
+
         #     if st.button("🔍 Generar Análisis", type="primary"):
         #         with st.spinner("Generando mapa de potencial..."):
         #             # Crear grid
         #             lats = np.linspace(lat_min, lat_max, grid_size)
         #             lons = np.linspace(lon_min, lon_max, grid_size)
-                    
+
         #             predictions_grid = []
-                    
+
         #             for lat in lats:
         #                 for lon in lons:
         #                     # Crear datos promedio para cada punto
@@ -857,13 +886,13 @@ if df is not None:
         #                         'competencia': [df['competencia'].mean()],
         #                         'tiendas_peq': [df['tiendas_peq'].mean()]
         #                     })
-                            
+
         #                     pred = model.predict(grid_data)[0]
         #                     predictions_grid.append([lat, lon, pred])
-                    
+
         #             # Crear DataFrame con predicciones
         #             pred_df = pd.DataFrame(predictions_grid, columns=['lat', 'lon', 'ventas_pred'])
-                    
+
         #             # Visualizar mapa de calor
         #             fig_heatmap = px.density_contour(
         #                 pred_df,
@@ -874,7 +903,7 @@ if df is not None:
         #                 labels={'ventas_pred': 'Ventas Predichas'}
         #             )
         #             fig_heatmap.update_traces(contours_coloring="fill", contours_showlabels=True)
-                    
+
         #             # Agregar tiendas existentes
         #             fig_heatmap.add_trace(
         #                 go.Scatter(
@@ -885,14 +914,14 @@ if df is not None:
         #                     name='Tiendas Existentes'
         #                 )
         #             )
-                    
+
         #             st.plotly_chart(fig_heatmap, use_container_width=True)
-                    
+
         #             # Identificar mejores ubicaciones
-        #             st.subheader("🎯 Top 5 Mejores Ubicaciones Potenciales")
-                    
+        #             st.subheader("Top 5 Mejores Ubicaciones Potenciales")
+
         #             top_locations = pred_df.nlargest(5, 'ventas_pred')
-                    
+
         #             for idx, row in top_locations.iterrows():
         #                 col1, col2, col3 = st.columns([2, 2, 1])
         #                 with col1:
@@ -903,30 +932,30 @@ if df is not None:
         #                 with col3:
         #                     st.button("📍", key=f"loc_{idx}", help="Ver en mapa")
         #                 st.markdown("---")
-        
+
     # TAB : RECOMENDACIONES
     with tab4:
-        st.header("💡 Recomendaciones y Mejores Prácticas")
-        
+        st.header("Recomendaciones y Mejores Prácticas")
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
-            st.subheader("📈 Factores de Éxito")
-            
+            st.subheader("Factores de Éxito")
+
             # Análisis de tiendas exitosas
             top_stores = df.nlargest(10, 'ventas_m24')
-            
+
             st.markdown("""
             ### Características de Tiendas Top Performers:
             """)
-            
+
             success_metrics = {
                 "Población 100m": ("pop_100m", top_stores["pop_100m"].mean()),
                 "Tráfico Peatonal": ("foot_traffic", top_stores["foot_traffic"].mean()),
                 "Comercios Cercanos": ("commerces", top_stores["commerces"].mean()),
                 "Nivel Socioeconómico": ("socio_level", top_stores["socio_level"].mean())
             }
-                        
+
             for label, (col, value) in success_metrics.items():
                 avg_value = df[col].mean()
                 diff = ((value / avg_value - 1) * 100) if avg_value != 0 else 0
@@ -935,11 +964,11 @@ if df is not None:
                     f"{value:,.1f}",
                     f"{diff:+.1f}% vs promedio"
                 )
-            
+
             st.markdown("---")
-            
+
             st.success("""
-            ### ✅ Recomendaciones Clave:
+            ### Recomendaciones Clave:
             
             1. **Ubicación Estratégica**
                - Priorizar áreas con alta densidad poblacional
@@ -953,30 +982,30 @@ if df is not None:
                - Adaptar formato según demografía
                - Considerar poder adquisitivo del área
             """)
-        
+
         with col2:
-            st.subheader("⚠️ Factores de Riesgo")
-            
+            st.subheader("Factores de Riesgo")
+
             # Análisis de tiendas con bajo desempeño
             bottom_stores = df.nsmallest(10, 'ventas_m24')
-            
+
             st.markdown("""
             ### Características a Evitar:
             """)
-            
+
             risk_metrics = {
                 'Alta Competencia': bottom_stores['competencia'].mean(),
                 'Bajo Tráfico': bottom_stores['foot_traffic'].mean(),
                 'Pocos Comercios': bottom_stores['commerces'].mean()
             }
-            
+
             for metric, value in risk_metrics.items():
                 st.metric(metric, f"{value:.1f}", delta_color="inverse")
-            
+
             st.markdown("---")
-            
+
             st.warning("""
-            ### ⚠️ Señales de Alerta:
+            ### Señales de Alerta:
             
             1. **Saturación del Mercado**
                - Más de 30 competidores en radio de 500m
@@ -990,5 +1019,5 @@ if df is not None:
                - Bajo tráfico peatonal (<100)
                - Difícil acceso vehicular
             """)
-        
+
         st.markdown("---")
