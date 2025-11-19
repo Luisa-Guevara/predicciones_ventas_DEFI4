@@ -56,7 +56,6 @@ if df is not None:
         "Resumen General",
         "Distribuciones",
         "Correlaciones",
-        "Análisis Geográfico",
         "Análisis por Tipo",
     ])
 
