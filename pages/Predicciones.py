@@ -4,7 +4,7 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import folium_static, st_folium
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
@@ -74,6 +74,7 @@ def load_data():
         return None
 
 # Entrenar o cargar modelo
+
 
 @st.cache_resource
 def train_model(df):
@@ -178,10 +179,10 @@ if df is not None:
         # ">
         #     <h4 style="margin-top:0;">Importante</h4>
         #     <p>
-        #     Este modelo tiene un nivel de precisión <b>moderado (R² ≈ 0.68)</b>, 
+        #     Este modelo tiene un nivel de precisión <b>moderado (R² ≈ 0.68)</b>,
         #     lo que significa que no puede predecir las ventas con exactitud del 100%.<br><br>
-        #     Se recomienda usar estas predicciones como una <b>guía analítica</b> 
-        #     para apoyar la toma de decisiones, complementándolas siempre con 
+        #     Se recomienda usar estas predicciones como una <b>guía analítica</b>
+        #     para apoyar la toma de decisiones, complementándolas siempre con
         #     <b>criterio experto y conocimiento del contexto comercial</b>.
         #     </p>
         # </div>
@@ -334,16 +335,16 @@ if df is not None:
                 st.metric("Tiendas", len(df_filtered))
             with col2:
                 st.metric("Venta Promedio",
-                            f"${df_filtered['ventas_m24'].mean():,.0f}")
+                          f"${df_filtered['ventas_m24'].mean():,.0f}")
 
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("Venta Total",
-                            f"${df_filtered['ventas_m24'].sum():,.0f}")
+                          f"${df_filtered['ventas_m24'].sum():,.0f}")
             with col2:
                 st.metric("Densidad Promedio",
-                            f"{df_filtered['pop_100m'].mean():.0f}")
-                            
+                          f"{df_filtered['pop_100m'].mean():.0f}")
+
             # Aplicar estilo a las tarjetas
             style_metric_cards(
                 background_color='rgba(255, 255, 255, 0.05)',
@@ -365,22 +366,77 @@ if df is not None:
             st.markdown('<div class="input-section">', unsafe_allow_html=True)
             st.subheader("Ubicación y Características")
 
-            # Inputs geográficos
+            # Inicializar coordenadas en session_state
+            if 'lat_pred' not in st.session_state:
+                st.session_state.lat_pred = float(df['lat'].mean())
+            if 'lon_pred' not in st.session_state:
+                st.session_state.lon_pred = float(df['lon'].mean())
+
+            st.markdown(
+                "**Haz clic en el mapa para seleccionar la ubicación:**")
+
+            # Crear mapa interactivo
+            m = folium.Map(
+                location=[st.session_state.lat_pred,
+                          st.session_state.lon_pred],
+                zoom_start=12,
+                tiles='OpenStreetMap'
+            )
+
+            # Agregar tiendas existentes (solo primeras 20 para velocidad)
+            for idx, row in df.head(20).iterrows():
+                folium.CircleMarker(
+                    location=[row['lat'], row['lon']],
+                    radius=4,
+                    color='gray',
+                    fill=True,
+                    fillColor='lightgray',
+                    fillOpacity=0.4,
+                    popup=f"{row['Tienda']}: ${row['ventas_m24']:,.0f}",
+                    tooltip="Tienda existente"
+                ).add_to(m)
+
+            # Marcador de ubicación seleccionada (rojo grande)
+            folium.Marker(
+                location=[st.session_state.lat_pred,
+                          st.session_state.lon_pred],
+                popup=f"""
+                <div style='width: 180px'>
+                    <b>Nueva Ubicación</b><br>
+                    <b>Lat:</b> {st.session_state.lat_pred:.6f}<br>
+                    <b>Lon:</b> {st.session_state.lon_pred:.6f}
+                </div>
+                """,
+                icon=folium.Icon(color='red', icon='star', prefix='fa'),
+                tooltip="Click para cambiar ubicación"
+            ).add_to(m)
+
+            # Capturar clics en el mapa
+            map_output = st_folium(
+                m,
+                width=650,
+                height=400,
+                returned_objects=["last_clicked"],
+                key="map_prediccion"
+            )
+
+            # Si hubo clic, actualizar coordenadas
+            if map_output and map_output.get("last_clicked"):
+                st.session_state.lat_pred = map_output["last_clicked"]["lat"]
+                st.session_state.lon_pred = map_output["last_clicked"]["lng"]
+                st.rerun()
+
+            # Mostrar coordenadas seleccionadas
+            st.markdown("**Coordenadas seleccionadas:**")
             col_a, col_b = st.columns(2)
             with col_a:
-                lat_pred = st.number_input(
-                    "Latitud",
-                    value=float(df['lat'].mean()),
-                    format="%.6f",
-                    help="Coordenada de latitud de la nueva tienda"
-                )
+                st.info(f"**Latitud:** {st.session_state.lat_pred:.6f}")
             with col_b:
-                lon_pred = st.number_input(
-                    "Longitud",
-                    value=float(df['lon'].mean()),
-                    format="%.6f",
-                    help="Coordenada de longitud de la nueva tienda"
-                )
+                st.info(f"**Longitud:** {st.session_state.lon_pred:.6f}")
+
+            # Usar las coordenadas de session_state
+            lat_pred = st.session_state.lat_pred
+            lon_pred = st.session_state.lon_pred
 
             store_cat_pred = st.selectbox(
                 "Tipo de Tienda",
@@ -656,7 +712,7 @@ if df is not None:
                         )
 
                     # ===== BOTÓN EXPANDIBLE PARA EXPLORAR CLUSTER =====
-                    with st.expander("🔍 **Explorar más sobre el Cluster y Análisis**", expanded=False):
+                    with st.expander("**Explorar más sobre el Cluster y Análisis**", expanded=False):
                         st.markdown(
                             f"### Análisis Detallado - Cluster {cluster_asignado}")
 
@@ -746,7 +802,7 @@ if df is not None:
 
                         # ===== DENDROGRAMA =====
                         st.markdown("---")
-                        st.markdown("#### 🌳 Dendrograma Jerárquico")
+                        st.markdown("#### Dendrograma Jerárquico")
 
                         from scipy.cluster.hierarchy import dendrogram as scipy_dendrogram
 
@@ -780,7 +836,7 @@ if df is not None:
                         # ===== SILHOUETTE SCORES =====
                         st.markdown("---")
                         st.markdown(
-                            "#### 📏 Evaluación de Clustering (Silhouette Score)")
+                            "#### Evaluación de Clustering (Silhouette Score)")
 
                         df_sil = pd.DataFrame({
                             'K': list(sil_scores.keys()),
@@ -839,123 +895,6 @@ if df is not None:
                 - Se recomienda evaluar factores adicionales
                 - Considerar estrategias de diferenciación
                 """)
-
-        # # TAB 4: ANÁLISIS DE ZONA
-        # with tab4:
-        #     st.header("Análisis de Potencial por Zona")
-
-        #     # Crear grid de predicciones
-        #     st.subheader("Mapa de Calor de Potencial de Ventas")
-
-        #     with st.expander("Configurar Análisis de Zona"):
-        #         col1, col2 = st.columns(2)
-
-        #         with col1:
-        #             lat_min = st.number_input(
-        #                 "Latitud Mínima",
-        #                 value=float(df['lat'].min()),
-        #                 format="%.6f"
-        #             )
-        #             lat_max = st.number_input(
-        #                 "Latitud Máxima",
-        #                 value=float(df['lat'].max()),
-        #                 format="%.6f"
-        #             )
-
-        #         with col2:
-        #             lon_min = st.number_input(
-        #                 "Longitud Mínima",
-        #                 value=float(df['lon'].min()),
-        #                 format="%.6f"
-        #             )
-        #             lon_max = st.number_input(
-        #                 "Longitud Máxima",
-        #                 value=float(df['lon'].max()),
-        #                 format="%.6f"
-        #             )
-
-        #         grid_size = st.slider("Resolución del Grid", 5, 20, 10)
-        #         tipo_analisis = st.selectbox(
-        #             "Tipo de Tienda para Análisis",
-        #             df['store_cat'].unique()
-        #         )
-
-        #     if st.button("🔍 Generar Análisis", type="primary"):
-        #         with st.spinner("Generando mapa de potencial..."):
-        #             # Crear grid
-        #             lats = np.linspace(lat_min, lat_max, grid_size)
-        #             lons = np.linspace(lon_min, lon_max, grid_size)
-
-        #             predictions_grid = []
-
-        #             for lat in lats:
-        #                 for lon in lons:
-        #                     # Crear datos promedio para cada punto
-        #                     grid_data = pd.DataFrame({
-        #                         'lat': [lat],
-        #                         'lon': [lon],
-        #                         'store_cat': [tipo_analisis],
-        #                         'pop_100m': [df['pop_100m'].mean()],
-        #                         'pop_300m': [df['pop_300m'].mean()],
-        #                         'pop_500m': [df['pop_500m'].mean()],
-        #                         'commerces': [df['commerces'].mean()],
-        #                         'gas_stations': [df['gas_stations'].mean()],
-        #                         'malls': [df['malls'].mode()[0]],
-        #                         'foot_traffic': [df['foot_traffic'].mean()],
-        #                         'car_traffic': [df['car_traffic'].mean()],
-        #                         'socio_level': [df['socio_level'].mode()[0]],
-        #                         'viviendas_100m': [df['viviendas_100m'].mean()],
-        #                         'oficinas_100m': [df['oficinas_100m'].mean()],
-        #                         'viviendas_pobreza': [df['viviendas_pobreza'].mean()],
-        #                         'competencia': [df['competencia'].mean()],
-        #                         'tiendas_peq': [df['tiendas_peq'].mean()]
-        #                     })
-
-        #                     pred = model.predict(grid_data)[0]
-        #                     predictions_grid.append([lat, lon, pred])
-
-        #             # Crear DataFrame con predicciones
-        #             pred_df = pd.DataFrame(predictions_grid, columns=['lat', 'lon', 'ventas_pred'])
-
-        #             # Visualizar mapa de calor
-        #             fig_heatmap = px.density_contour(
-        #                 pred_df,
-        #                 x='lon',
-        #                 y='lat',
-        #                 z='ventas_pred',
-        #                 title=f'Mapa de Potencial de Ventas - {tipo_analisis}',
-        #                 labels={'ventas_pred': 'Ventas Predichas'}
-        #             )
-        #             fig_heatmap.update_traces(contours_coloring="fill", contours_showlabels=True)
-
-        #             # Agregar tiendas existentes
-        #             fig_heatmap.add_trace(
-        #                 go.Scatter(
-        #                     x=df['lon'],
-        #                     y=df['lat'],
-        #                     mode='markers',
-        #                     marker=dict(size=8, color='red', symbol='star'),
-        #                     name='Tiendas Existentes'
-        #                 )
-        #             )
-
-        #             st.plotly_chart(fig_heatmap, use_container_width=True)
-
-        #             # Identificar mejores ubicaciones
-        #             st.subheader("Top 5 Mejores Ubicaciones Potenciales")
-
-        #             top_locations = pred_df.nlargest(5, 'ventas_pred')
-
-        #             for idx, row in top_locations.iterrows():
-        #                 col1, col2, col3 = st.columns([2, 2, 1])
-        #                 with col1:
-        #                     st.write(f"**Ubicación {idx+1}**")
-        #                     st.write(f"Lat: {row['lat']:.6f}, Lon: {row['lon']:.6f}")
-        #                 with col2:
-        #                     st.metric("Ventas Estimadas", f"${row['ventas_pred']:,.0f}")
-        #                 with col3:
-        #                     st.button("📍", key=f"loc_{idx}", help="Ver en mapa")
-        #                 st.markdown("---")
 
     # TAB : RECOMENDACIONES
     with tab4:
@@ -1047,4 +986,3 @@ if df is not None:
         st.markdown("---")
 
     st.markdown("---")
-    
