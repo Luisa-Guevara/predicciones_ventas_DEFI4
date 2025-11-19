@@ -37,13 +37,13 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
-    
+
 st.set_page_config(page_title="General", page_icon="", layout="wide")
 
 
-st.title("Estadísticas Generales")
-st.markdown("Explora las características de las tiendas y sus ventas")
-st.markdown("---")
+# st.title("Estadísticas Generales")
+# st.markdown("Explora las características de las tiendas y sus ventas")
+# st.markdown("---")
 
 
 @st.cache_data
@@ -192,6 +192,23 @@ if df is not None:
     with tab3:
         st.header("Análisis de Correlaciones")
 
+        st.subheader("Insights Clave")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.success(
+                "**viviendas_100m** tiene la mayor correlación con ventas (0.923).")
+            st.info(
+                "Variables poblacionales cercanas son los predictores más fuertes.")
+
+        with col2:
+            st.info(
+                "Zonas con más tráfico peatonal y oficinas también presentan mejores ventas.")
+            st.warning(
+                "Competencia cercana y gasolineras no muestran correlaciones relevantes.")
+        
+        st.markdown("---")
+        
         # Seleccionar variables numéricas
         numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
         numeric_cols.remove('ventas_m24')  # Remover target
@@ -216,22 +233,8 @@ if df is not None:
                 aspect='auto'
             )
             st.plotly_chart(fig_corr, use_container_width=True)
-
-        st.markdown("---")
-        st.subheader("Insights Clave")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.success(
-                "**viviendas_100m** tiene la mayor correlación con ventas (0.923).")
-            st.info(
-                "Variables poblacionales cercanas son los predictores más fuertes.")
-
-        with col2:
-            st.info(
-                "Zonas con más tráfico peatonal y oficinas también presentan mejores ventas.")
-            st.warning(
-                "Competencia cercana y gasolineras no muestran correlaciones relevantes.")
+    
+    st.markdown("---")
 
 else:
     st.error(

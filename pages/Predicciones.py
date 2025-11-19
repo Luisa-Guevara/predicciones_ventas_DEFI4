@@ -13,6 +13,7 @@ from sklearn.pipeline import Pipeline
 import joblib
 import os
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from streamlit_extras.metric_cards import style_metric_cards
 
 # Clusters
 from utils.functional_analysis import (
@@ -57,10 +58,10 @@ st.set_page_config(page_title="Estimaciones",
                    page_icon="", layout="wide")
 
 
-st.title("Predicciones Geográficas de Ventas")
-st.markdown(
-    "Predice ventas para nuevas ubicaciones y visualiza el mapa de oportunidades")
-st.markdown("---")
+# st.title("Predicciones Geográficas de Ventas")
+# st.markdown(
+#     "Predice ventas para nuevas ubicaciones y visualiza el mapa de oportunidades")
+# st.markdown("---")
 
 
 @st.cache_data
@@ -73,7 +74,6 @@ def load_data():
         return None
 
 # Entrenar o cargar modelo
-
 
 @st.cache_resource
 def train_model(df):
@@ -166,32 +166,37 @@ if df is not None:
         with col3:
             st.metric("RMSE", f"${rmse:,.0f}")
 
-        st.markdown("---")
         # --- Tarjeta aclaratoria sobre la precisión ---
-        st.markdown("""
-        <div style="
-            background-color: #fff3cd;
-            border-left: 6px solid #ffcc00;
-            padding: 1.2rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            color: #856404;
-        ">
-            <h4 style="margin-top:0;">Importante</h4>
-            <p>
-            Este modelo tiene un nivel de precisión <b>moderado (R² ≈ 0.68)</b>, 
-            lo que significa que no puede predecir las ventas con exactitud del 100%.<br><br>
-            Se recomienda usar estas predicciones como una <b>guía analítica</b> 
-            para apoyar la toma de decisiones, complementándolas siempre con 
-            <b>criterio experto y conocimiento del contexto comercial</b>.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
+        # st.markdown("""
+        # <div style="
+        #     background-color: #fff3cd;
+        #     border-left: 6px solid #ffcc00;
+        #     padding: 1.2rem;
+        #     border-radius: 8px;
+        #     margin-bottom: 1rem;
+        #     color: #856404;
+        # ">
+        #     <h4 style="margin-top:0;">Importante</h4>
+        #     <p>
+        #     Este modelo tiene un nivel de precisión <b>moderado (R² ≈ 0.68)</b>, 
+        #     lo que significa que no puede predecir las ventas con exactitud del 100%.<br><br>
+        #     Se recomienda usar estas predicciones como una <b>guía analítica</b> 
+        #     para apoyar la toma de decisiones, complementándolas siempre con 
+        #     <b>criterio experto y conocimiento del contexto comercial</b>.
+        #     </p>
+        # </div>
+        # """, unsafe_allow_html=True)
+        st.warning(
+            "Este modelo tiene un nivel de precisión moderado (R² ≈ 0.68), "
+            "lo que significa que no puede predecir las ventas con exactitud del 100%."
+            "Se recomienda usar estas predicciones como una guía analítica "
+            "para apoyar la toma de decisiones, complementándolas siempre con "
+            "criterio experto y conocimiento del contexto comercial.")
 
         st.markdown("---")
 
         # Importancia de variables
-        st.subheader("🔍 Importancia de Variables en el Modelo")
+        st.subheader("Importancia de Variables en el Modelo")
 
         try:
             # Recuperar nombres de features tras one-hot encoding
@@ -220,6 +225,9 @@ if df is not None:
 
             fig_imp.update_yaxes(categoryorder="total ascending")
             st.plotly_chart(fig_imp, use_container_width=True)
+
+            st.info('Como se pudo intuir en el análisis general, una de las variables más influyentes en la predicción de las ventas con un 18% de importancia sobre la predicción es el numero de la población a 100 metros de la tienda.')
+
         except Exception as e:
             st.warning(f"No se pudo calcular la importancia de variables: {e}")
 
@@ -227,26 +235,25 @@ if df is not None:
     with tab2:
         st.header("Mapa de Tiendas y Predicciones")
 
-        col1, col2 = st.columns([2, 1])
+        st.subheader("Filtros")
 
-        with col2:
-            st.subheader("Filtros")
+        # Filtros
+        tipo_tienda_filter = st.multiselect(
+            "Tipo de Tienda:",
+            df['store_cat'].unique(),
+            default=df['store_cat'].unique()
+        )
 
-            # Filtros
-            tipo_tienda_filter = st.multiselect(
-                "Tipo de Tienda:",
-                df['store_cat'].unique(),
-                default=df['store_cat'].unique()
-            )
+        venta_min, venta_max = st.slider(
+            "Rango de Ventas:",
+            float(df['ventas_m24'].min()),
+            float(df['ventas_m24'].max()),
+            (float(df['ventas_m24'].min()), float(df['ventas_m24'].max()))
+        )
 
-            venta_min, venta_max = st.slider(
-                "Rango de Ventas:",
-                float(df['ventas_m24'].min()),
-                float(df['ventas_m24'].max()),
-                (float(df['ventas_m24'].min()), float(df['ventas_m24'].max()))
-            )
+        mostrar_heatmap = st.checkbox("Mostrar mapa de calor", value=False)
 
-            mostrar_heatmap = st.checkbox("Mostrar mapa de calor", value=False)
+        col1, col2 = st.columns([1, 1])
 
         with col1:
             # Filtrar datos
@@ -262,8 +269,10 @@ if df is not None:
 
             m = folium.Map(
                 location=[center_lat, center_lon],
-                zoom_start=12,
-                tiles='OpenStreetMap'
+                zoom_start=11,
+                tiles='OpenStreetMap',
+                width=650,
+                height=400
             )
 
             # Agregar marcadores
@@ -282,7 +291,7 @@ if df is not None:
                 folium.Marker(
                     location=[row['lat'], row['lon']],
                     popup=f"""
-                    <div style='width: 200px'>
+                    <div style='width: 150px'>
                         <b>{row['Tienda']}</b><br>
                         <b>Tipo:</b> {row['store_cat']}<br>
                         <b>Ventas:</b> ${row['ventas_m24']:,.0f}<br>
@@ -315,23 +324,33 @@ if df is not None:
             m.get_root().html.add_child(folium.Element(legend_html))
 
             folium_static(m, width=800, height=600)
-
+        with col2:
             # Estadísticas del área filtrada
             st.markdown("---")
             st.subheader("Estadísticas del Área Seleccionada")
 
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2 = st.columns(2)
             with col1:
                 st.metric("Tiendas", len(df_filtered))
             with col2:
                 st.metric("Venta Promedio",
-                          f"${df_filtered['ventas_m24'].mean():,.0f}")
-            with col3:
+                            f"${df_filtered['ventas_m24'].mean():,.0f}")
+
+            col1, col2 = st.columns(2)
+            with col1:
                 st.metric("Venta Total",
-                          f"${df_filtered['ventas_m24'].sum():,.0f}")
-            with col4:
+                            f"${df_filtered['ventas_m24'].sum():,.0f}")
+            with col2:
                 st.metric("Densidad Promedio",
-                          f"{df_filtered['pop_100m'].mean():.0f}")
+                            f"{df_filtered['pop_100m'].mean():.0f}")
+                            
+            # Aplicar estilo a las tarjetas
+            style_metric_cards(
+                background_color='rgba(255, 255, 255, 0.05)',
+                border_left_color="#00bf63",
+                border_color="#e0e0e0",
+                box_shadow="0 4px 6px rgba(0,191,99,0.2)"
+            )
 
     # TAB 3: PREDICCIÓN INDIVIDUAL
     with tab3:
@@ -370,7 +389,7 @@ if df is not None:
             )
 
             st.markdown("---")
-            st.subheader("👥 Datos Demográficos")
+            st.subheader("Datos Demográficos")
 
             col_c, col_d = st.columns(2)
             with col_c:
@@ -400,7 +419,7 @@ if df is not None:
 
         with col2:
             st.markdown('<div class="input-section">', unsafe_allow_html=True)
-            st.subheader("🏬 Entorno Comercial")
+            st.subheader("Entorno Comercial")
 
             col_e, col_f = st.columns(2)
             with col_e:
@@ -463,7 +482,7 @@ if df is not None:
 
         # Botón de predicción
         st.markdown("---")
-        if st.button("🚀 Realizar Predicción", type="primary", use_container_width=True):
+        if st.button("Realizar Predicción", type="primary", use_container_width=True):
             # Crear dataframe con inputs
             new_data = pd.DataFrame({
                 'lat': [lat_pred],
@@ -1026,3 +1045,6 @@ if df is not None:
             """)
 
         st.markdown("---")
+
+    st.markdown("---")
+    
