@@ -3,7 +3,7 @@ import hydralit_components as hc
 
 # Configuración de la página
 st.set_page_config(
-    page_title="Sistema de Predicción de Ventas",
+    page_title="Sistema de Estimación de Ventas",
     page_icon="",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -29,8 +29,8 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # Definir opciones del menú
-eda_tab = 'Análisis Exploratorio'
-pred_tab = 'Predicciones'
+eda_tab = 'Análisis General'
+pred_tab = 'Estimaciones'
 
 option_data = [
     {'icon': "", 'label': eda_tab},
@@ -60,4 +60,3 @@ if chosen_tab == eda_tab:
 
 elif chosen_tab == pred_tab:
     exec(open("pages/predicciones.py").read())
-

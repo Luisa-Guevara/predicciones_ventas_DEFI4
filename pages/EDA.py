@@ -8,34 +8,42 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from streamlit_extras.metric_cards import style_metric_cards
 
-# Configuración
-st.set_page_config(page_title="EDA y Análisis", page_icon="", layout="wide")
-
-# CSS personalizado
 st.markdown("""
     <style>
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 10px;
-        color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    /* Centrar y expandir tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+        justify-content: center;
+        width: 100%;
     }
-    .stat-box {
-        background-color: #f8f9fa;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #667eea;
+    
+    /* Hacer que cada tab ocupe más espacio */
+    .stTabs [data-baseweb="tab"] {
+        flex-grow: 1;
+        text-align: center;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    /* Opcional: Borde inferior para el tab activo */
+    .stTabs [aria-selected="true"] {
+        border-bottom: 3px solid #00bf63;
+    }
+    
+    /* Contenedor de tabs con ancho completo */
+    .stTabs {
+        width: 100%;
     }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+    
+st.set_page_config(page_title="General", page_icon="", layout="wide")
 
-# Título
-st.title("Análisis Exploratorio de Datos")
+
+st.title("Estadísticas Generales")
 st.markdown("Explora las características de las tiendas y sus ventas")
 st.markdown("---")
-
-# Cargar datos
 
 
 @st.cache_data
@@ -50,33 +58,50 @@ def load_data():
 
 df = load_data()
 
+
 if df is not None:
-    # Tabs principales
-    tab1, tab2, tab3, tab4 = st.tabs([
+    
+    tab1, tab2, tab3 = st.tabs([
         "Resumen General",
         "Distribuciones",
         "Correlaciones",
-        "Análisis por Tipo",
     ])
 
     # TAB 1: RESUMEN GENERAL
     with tab1:
-        st.header("Estadísticas Generales")
+
+        # Filtro de selección múltiple
+        categorias_disponibles = list(df['store_cat'].unique())
+        categorias_seleccionadas = st.multiselect(
+            "Filtrar por Tipo de Tienda:",
+            options=categorias_disponibles,
+            default=categorias_disponibles,
+            help="Selecciona una o varias categorías. Por defecto muestra todas."
+        )
+
+        # Filtrar dataframe según selección
+        if categorias_seleccionadas:
+            df_filtrado = df[df['store_cat'].isin(categorias_seleccionadas)]
+        else:
+            df_filtrado = df  # Si no hay selección, mostrar todo
 
         # Métricas principales
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
-            st.metric("Total Tiendas", f"{len(df):,}")
+            st.metric("Total Tiendas", f"{len(df_filtrado):,}")
 
         with col2:
-            st.metric("Venta Promedio", f"${df['ventas_m24'].mean():,.0f}")
+            st.metric("Venta Mínima",
+                      f"${df_filtrado['ventas_m24'].min():,.0f}")
 
         with col3:
-            st.metric("Venta Máxima", f"${df['ventas_m24'].max():,.0f}")
+            st.metric("Venta Promedio",
+                      f"${df_filtrado['ventas_m24'].mean():,.0f}")
 
         with col4:
-            st.metric("Venta Mínima", f"${df['ventas_m24'].min():,.0f}")
+            st.metric("Venta Máxima",
+                      f"${df_filtrado['ventas_m24'].max():,.0f}")
 
         # Aplicar estilo a las tarjetas
         style_metric_cards(
@@ -86,11 +111,12 @@ if df is not None:
             box_shadow="0 4px 6px rgba(0,191,99,0.2)"
         )
 
+        st.markdown("---")
+
         col1, col2 = st.columns(2)
 
         with col1:
-            # st.subheader("Distribución por Tipo de Tienda")
-            store_counts = df['store_cat'].value_counts()
+            store_counts = df_filtrado['store_cat'].value_counts()
             fig_pie = px.pie(
                 values=store_counts.values,
                 names=store_counts.index,
@@ -99,8 +125,7 @@ if df is not None:
             st.plotly_chart(fig_pie, use_container_width=True)
 
         with col2:
-            # st.subheader("Distribución por Nivel Socioeconómico")
-            socio_counts = df['socio_level'].value_counts()
+            socio_counts = df_filtrado['socio_level'].value_counts()
             fig_bar = px.bar(
                 x=socio_counts.index,
                 y=socio_counts.values,
@@ -129,14 +154,14 @@ if df is not None:
             st.plotly_chart(fig_hist, use_container_width=True)
 
             # Box plot de ventas por tipo de tienda
-            fig_box = px.box(
-                df,
-                x='store_cat',
-                y='ventas_m24',
-                title='Ventas por Tipo de Tienda',
-                color='store_cat'
-            )
-            st.plotly_chart(fig_box, use_container_width=True)
+            # fig_box = px.box(
+            #     df,
+            #     x='store_cat',
+            #     y='ventas_m24',
+            #     title='Ventas por Tipo de Tienda',
+            #     color='store_cat'
+            # )
+            # st.plotly_chart(fig_box, use_container_width=True)
 
         with col2:
             # Distribución de población
@@ -151,17 +176,17 @@ if df is not None:
             fig_pop.update_layout(showlegend=False)
             st.plotly_chart(fig_pop, use_container_width=True)
 
-            # Scatter: población vs ventas
-            fig_scatter = px.scatter(
-                df,
-                x='pop_100m',
-                y='ventas_m24',
-                color='store_cat',
-                size='foot_traffic',
-                hover_data=['Tienda'],
-                title='Población vs Ventas (tamaño = tráfico peatonal)'
-            )
-            st.plotly_chart(fig_scatter, use_container_width=True)
+        # Scatter: población vs ventas
+        fig_scatter = px.scatter(
+            df,
+            x='pop_100m',
+            y='ventas_m24',
+            color='store_cat',
+            size='foot_traffic',
+            hover_data=['Tienda'],
+            title='Población vs Ventas (tamaño = tráfico peatonal)'
+        )
+        st.plotly_chart(fig_scatter, use_container_width=True)
 
     # TAB 3: CORRELACIONES
     with tab3:
@@ -207,84 +232,6 @@ if df is not None:
                 "Zonas con más tráfico peatonal y oficinas también presentan mejores ventas.")
             st.warning(
                 "Competencia cercana y gasolineras no muestran correlaciones relevantes.")
-
-    # TAB 5: ANÁLISIS POR TIPO
-    with tab4:
-        st.header("Análisis por Tipo de Tienda")
-
-        tipo_tienda = st.selectbox(
-            "Selecciona tipo de tienda:",
-            df['store_cat'].unique()
-        )
-
-        df_tipo = df[df['store_cat'] == tipo_tienda]
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            st.metric("Número de Tiendas", len(df_tipo))
-        with col2:
-            st.metric("Venta Promedio",
-                      f"${df_tipo['ventas_m24'].mean():,.0f}")
-        with col3:
-            st.metric("Venta Mediana",
-                      f"${df_tipo['ventas_m24'].median():,.0f}")
-
-        # Aplicar estilo a las tarjetas
-        style_metric_cards(
-            background_color='rgba(255, 255, 255, 0.05)',
-            border_left_color="#00bf63",
-            border_color="#e0e0e0",
-            box_shadow="0 4px 6px rgba(0,191,99,0.2)"
-        )
-
-        # Comparación con otros tipos
-        st.subheader("Comparación con Otros Tipos")
-
-        comparison = df.groupby('store_cat').agg({
-            'ventas_m24': ['mean', 'median', 'std'],
-            'pop_100m': 'mean',
-            'competencia': 'mean'
-        }).round(2)
-
-        st.dataframe(comparison, use_container_width=True)
-
-        # Gráfico de comparación
-        fig_comp = px.box(
-            df,
-            x='store_cat',
-            y='ventas_m24',
-            title='Distribución de Ventas por Tipo de Tienda',
-            color='store_cat'
-        )
-        st.plotly_chart(fig_comp, use_container_width=True)
-
-    # with tab5:
-    #     st.header("Análisis de Valores Atípicos")
-
-    #     numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    #     selected_var = st.selectbox(
-    #         "Selecciona una variable para analizar:", numeric_cols)
-
-    #     fig_box_outliers = px.box(
-    #         df,
-    #         y=selected_var,
-    #         points="all",
-    #         title=f"Distribución y Outliers en {selected_var}",
-    #         color_discrete_sequence=['#667eea']
-    #     )
-    #     st.plotly_chart(fig_box_outliers, use_container_width=True)
-
-    #     q1 = df[selected_var].quantile(0.25)
-    #     q3 = df[selected_var].quantile(0.75)
-    #     iqr = q3 - q1
-    #     lower, upper = q1 - 1.5*iqr, q3 + 1.5*iqr
-    #     outliers = df[(df[selected_var] < lower) | (df[selected_var] > upper)]
-
-    #     st.write(
-    #         f"Se detectaron **{len(outliers)} outliers** para la variable *{selected_var}*")
-    #     st.dataframe(outliers.head(5), use_container_width=True)
-
 
 else:
     st.error(

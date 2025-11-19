@@ -22,40 +22,45 @@ from utils.functional_analysis import (
     estimate_sales_curve,
     CLUSTER_COLORS
 )
-# Configuración
-st.set_page_config(page_title="Predicciones Geográficas",
-                   page_icon="", layout="wide")
 
-# CSS personalizado
 st.markdown("""
     <style>
-    .prediction-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 15px;
-        color: white;
+    /* Centrar y expandir tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+        justify-content: center;
+        width: 100%;
+    }
+    
+    /* Hacer que cada tab ocupe más espacio */
+    .stTabs [data-baseweb="tab"] {
+        flex-grow: 1;
         text-align: center;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 500;
     }
-    .input-section {
-        background-color: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 10px;
-        margin: 1rem 0;
+    
+    /* Opcional: Borde inferior para el tab activo */
+    .stTabs [aria-selected="true"] {
+        border-bottom: 3px solid #00bf63;
     }
-    .stAlert {
-        border-radius: 10px;
+    
+    /* Contenedor de tabs con ancho completo */
+    .stTabs {
+        width: 100%;
     }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-# Título
+st.set_page_config(page_title="Estimaciones",
+                   page_icon="", layout="wide")
+
+
 st.title("Predicciones Geográficas de Ventas")
 st.markdown(
     "Predice ventas para nuevas ubicaciones y visualiza el mapa de oportunidades")
 st.markdown("---")
-
-# Cargar datos
 
 
 @st.cache_data
