@@ -1,0 +1,15 @@
+[theme]
+primaryColor="#00bf63"
+backgroundColor="#FFFFFF"
+secondaryBackgroundColor="#e0e0e0"
+textColor="#0E1117"
+font="sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[deprecation]
+showPyplotGlobalUse = false
+
+[client]
+showSidebarNavigation = false
