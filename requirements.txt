@@ -14,4 +14,4 @@ scipy==1.11.2
 scikit-fda==0.9.1
 streamlit-extras==0.7.8
 hydralit_components==1.0.10
-Pillow>=10.0.0
+Pillow>=10.4.0
