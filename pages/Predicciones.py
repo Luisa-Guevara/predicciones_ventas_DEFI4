@@ -225,7 +225,7 @@ if df is not None:
             )
 
             fig_imp.update_yaxes(categoryorder="total ascending")
-            st.plotly_chart(fig_imp, use_container_width=True)
+            st.plotly_chart(fig_imp, width="stretch")
 
             st.info('Como se pudo intuir en el análisis general, una de las variables más influyentes en la predicción de las ventas con un 18% de importancia sobre la predicción es el numero de la población a 100 metros de la tienda.')
 
@@ -538,7 +538,7 @@ if df is not None:
 
         # Botón de predicción
         st.markdown("---")
-        if st.button("Realizar Predicción", type="primary", use_container_width=True):
+        if st.button("Realizar Predicción", type="primary", width="stretch"):
             # Crear dataframe con inputs
             new_data = pd.DataFrame({
                 'lat': [lat_pred],
@@ -690,7 +690,7 @@ if df is not None:
                         showlegend=True
                     )
 
-                    st.plotly_chart(fig_main, use_container_width=True)
+                    st.plotly_chart(fig_main, width="stretch")
 
                     # Tabla de estimaciones
                     col_tabla1, col_tabla2 = st.columns(2)
@@ -699,7 +699,7 @@ if df is not None:
                         st.dataframe(
                             df_estimacion.head(12).style.format(
                                 {"Ventas_Estimadas": "${:,.2f}"}),
-                            use_container_width=True,
+                            width="stretch",
                             hide_index=True
                         )
                     with col_tabla2:
@@ -707,7 +707,7 @@ if df is not None:
                         st.dataframe(
                             df_estimacion.tail(12).style.format(
                                 {"Ventas_Estimadas": "${:,.2f}"}),
-                            use_container_width=True,
+                            width="stretch",
                             hide_index=True
                         )
 
@@ -779,7 +779,7 @@ if df is not None:
                             template='plotly_white'
                         )
 
-                        st.plotly_chart(fig_clusters, use_container_width=True)
+                        st.plotly_chart(fig_clusters, width="stretch")
 
                         # Tabla resumen de clusters
                         st.markdown("#### Resumen de Clusters")
@@ -798,7 +798,7 @@ if df is not None:
 
                         df_summary = pd.DataFrame(cluster_summary)
                         st.dataframe(
-                            df_summary, use_container_width=True, hide_index=True)
+                            df_summary, width="stretch", hide_index=True)
 
                         # ===== DENDROGRAMA =====
                         st.markdown("---")
@@ -831,7 +831,7 @@ if df is not None:
                             template='plotly_white'
                         )
 
-                        st.plotly_chart(fig_dend, use_container_width=True)
+                        st.plotly_chart(fig_dend, width="stretch")
 
                         # ===== SILHOUETTE SCORES =====
                         st.markdown("---")
@@ -859,7 +859,7 @@ if df is not None:
                         fig_sil.update_traces(
                             marker=dict(size=8), line=dict(width=2))
 
-                        st.plotly_chart(fig_sil, use_container_width=True)
+                        st.plotly_chart(fig_sil, width="stretch")
 
                         st.success(f"""
 **Interpretación:** El análisis automático determinó que **K={k_opt}** es el número 

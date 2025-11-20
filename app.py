@@ -56,7 +56,9 @@ chosen_tab = hc.option_bar(
 
 # Cargar la página según la selección
 if chosen_tab == eda_tab:
-    exec(open("pages/EDA.py").read())
+    exec(open("pages/EDA.py", encoding="utf-8").read())
 
 elif chosen_tab == pred_tab:
-    exec(open("pages/predicciones.py").read())
+    exec(open("pages/predicciones.py", encoding="utf-8").read())
+
+    

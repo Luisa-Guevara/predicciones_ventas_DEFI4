@@ -41,10 +41,6 @@ st.markdown("""
 st.set_page_config(page_title="General", page_icon="", layout="wide")
 
 
-# st.title("Estadísticas Generales")
-# st.markdown("Explora las características de las tiendas y sus ventas")
-# st.markdown("---")
-
 
 @st.cache_data
 def load_data():
@@ -61,9 +57,8 @@ df = load_data()
 
 if df is not None:
     
-    tab1, tab2, tab3 = st.tabs([
+    tab1, tab2 = st.tabs([
         "Resumen General",
-        "Distribuciones",
         "Correlaciones",
     ])
 
@@ -103,6 +98,20 @@ if df is not None:
             st.metric("Venta Máxima",
                       f"${df_filtrado['ventas_m24'].max():,.0f}")
 
+        col_a, col_b = st.columns(2)
+
+        with col_a:
+            st.metric(
+                "Promedio Tráfico Peatonal",
+                f"{df_filtrado['foot_traffic'].mean():,.0f}"
+            )
+
+        with col_b:
+            st.metric(
+                "Promedio Tráfico Vehicular",
+                f"{df_filtrado['car_traffic'].mean():,.0f}"
+            )
+
         # Aplicar estilo a las tarjetas
         style_metric_cards(
             background_color='rgba(255, 255, 255, 0.05)',
@@ -122,7 +131,7 @@ if df is not None:
                 names=store_counts.index,
                 title="Distribución por Tipo de Tienda"
             )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            st.plotly_chart(fig_pie, width="stretch")
 
         with col2:
             socio_counts = df_filtrado['socio_level'].value_counts()
@@ -132,53 +141,11 @@ if df is not None:
                 title="Distribución de Socio Level",
                 labels={'x': 'Nivel Socioeconómico', 'y': 'Frecuencia'}
             )
-            st.plotly_chart(fig_bar, use_container_width=True)
-
-    # TAB 2: DISTRIBUCIONES
-    with tab2:
-        st.header("Análisis de Distribuciones")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            # Distribución de ventas
-            fig_hist = px.histogram(
-                df,
-                x='ventas_m24',
-                nbins=30,
-                title='Distribución de Ventas (Mes 24)',
-                labels={'ventas_m24': 'Ventas'},
-                color_discrete_sequence=['#667eea']
-            )
-            fig_hist.update_layout(showlegend=False)
-            st.plotly_chart(fig_hist, use_container_width=True)
-
-            # Box plot de ventas por tipo de tienda
-            # fig_box = px.box(
-            #     df,
-            #     x='store_cat',
-            #     y='ventas_m24',
-            #     title='Ventas por Tipo de Tienda',
-            #     color='store_cat'
-            # )
-            # st.plotly_chart(fig_box, use_container_width=True)
-
-        with col2:
-            # Distribución de población
-            fig_pop = px.histogram(
-                df,
-                x='pop_100m',
-                nbins=30,
-                title='Distribución de Población (100m)',
-                labels={'pop_100m': 'Población'},
-                color_discrete_sequence=['#764ba2']
-            )
-            fig_pop.update_layout(showlegend=False)
-            st.plotly_chart(fig_pop, use_container_width=True)
+            st.plotly_chart(fig_bar, width="stretch")
 
         # Scatter: población vs ventas
         fig_scatter = px.scatter(
-            df,
+            df_filtrado,
             x='pop_100m',
             y='ventas_m24',
             color='store_cat',
@@ -186,10 +153,10 @@ if df is not None:
             hover_data=['Tienda'],
             title='Población vs Ventas (tamaño = tráfico peatonal)'
         )
-        st.plotly_chart(fig_scatter, use_container_width=True)
+        st.plotly_chart(fig_scatter, width="stretch")
 
-    # TAB 3: CORRELACIONES
-    with tab3:
+    # TAB 2: CORRELACIONES
+    with tab2:
         st.header("Análisis de Correlaciones")
 
         st.subheader("Insights Clave")
@@ -222,7 +189,7 @@ if df is not None:
 
         with col1:
             st.subheader("Top Correlaciones con Ventas")
-            st.dataframe(correlations.head(10), use_container_width=True)
+            st.dataframe(correlations.head(10), width="stretch")
 
         with col2:
             # Heatmap de correlaciones
@@ -232,7 +199,7 @@ if df is not None:
                 color_continuous_scale='RdBu_r',
                 aspect='auto'
             )
-            st.plotly_chart(fig_corr, use_container_width=True)
+            st.plotly_chart(fig_corr, width="stretch")
     
     st.markdown("---")
 
